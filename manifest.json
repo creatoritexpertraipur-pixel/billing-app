@@ -1,16 +1,27 @@
 {
-  "short_name": "HotelBill",
   "name": "Hotel Offline Billing App",
+  "short_name": "HotelBill",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "description": "100% Offline Hotel Billing App with UPI QR System",
+  "lang": "hi",
+  "dir": "auto",
+  "theme_color": "#c0392b",
+  "background_color": "#f5f0e8",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/9618/9618641.png",
+      "src": "https://www.pwabuilder.com/assets/icons/icon_512.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "sizes": "512x512"
+      "purpose": "maskable"
+    },
+    {
+      "src": "https://www.pwabuilder.com/assets/icons/icon_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
-  "start_url": "./index.html",
-  "background_color": "#007bff",
-  "theme_color": "#007bff",
-  "display": "standalone",
-  "orientation": "portrait"
+  "prefer_related_applications": false
 }
