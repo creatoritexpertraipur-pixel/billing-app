@@ -3,16 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Hotel Billing Terminal (100% Offline)</title>
+<title>Hotel Billing (100% Offline QR Fixed)</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 :root {
   --bg: #f5f0e8; --card: #fff; --primary: #c0392b; --primary-dark: #96281b;
   --accent: #e67e22; --text: #2c2c2c; --muted: #7f8c8d; --border: #e2e8f0;
   --green: #27ae60; --shadow: 0 4px 12px rgba(0,0,0,0.06); --radius: 12px;
 }
 body { background: var(--bg); color: var(--text); min-height: 100vh; padding: 12px; display: flex; justify-content: center; }
-
 .app-container { width: 100%; max-width: 460px; margin: 0 auto; }
 
 /* HEADER */
@@ -22,36 +21,33 @@ body { background: var(--bg); color: var(--text); min-height: 100vh; padding: 12
 
 /* TABS */
 .tabs { display: flex; background: #e2e8f0; border-radius: 8px; padding: 4px; margin-bottom: 12px; }
-.tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer; border-radius: 6px; }
+.tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer; border-radius: 6px; border: none; background: transparent; }
 .tab.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
 .page { display: none; }
 .page.active { display: block; }
 
-/* BILL MODULE */
+/* CARDS */
 .card { background: var(--card); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); }
 .card-title { font-size: 13px; font-weight: 800; color: var(--primary); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; }
 
-/* LISTS & ITEMS */
+/* ITEMS */
 .item-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
 .item-row:last-child { border: none; }
 .btn-add { background: var(--green); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; }
 .btn-add:active { transform: scale(0.95); }
 
-/* CART & RECEIPT AREA */
 .cart-summary { display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 800; padding-top: 10px; margin-top: 10px; border-top: 2px dashed var(--border); }
 
-/* 100% OFFLINE RECEIPT DIALOG */
+/* RECEIPT ENGINE BOX */
 .receipt-box { display: none; background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); border: 2px solid var(--primary); margin-top: 12px; text-align: center; }
 .receipt-box.show { display: block; animation: popIn 0.3s ease; }
 @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-/* OFFLINE QR CANVAS TARGET */
 .qr-container { background: #f8fafc; padding: 16px; border-radius: 8px; display: inline-block; margin: 12px auto; border: 1px solid var(--border); }
-/* Canvas core alignment */
 .qr-container canvas { display: block; margin: 0 auto; background: white; }
 
-/* GLOBAL INPUTS */
+/* INPUTS */
 .form-group { margin-bottom: 12px; }
 .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; color: var(--text); }
 .form-group input { width: 100%; padding: 10px; border: 1.5px solid var(--border); border-radius: 6px; outline: none; font-size: 14px; }
@@ -61,7 +57,6 @@ body { background: var(--bg); color: var(--text); min-height: 100vh; padding: 12
 .btn-block:active { transform: scale(0.98); }
 .btn-print { background: var(--primary); }
 
-/* TOAST OVERLAY */
 .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2c3e50; color: white; padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.3s; z-index: 1000; pointer-events: none; }
 .toast.show { opacity: 1; }
 
@@ -74,104 +69,95 @@ body { background: var(--bg); color: var(--text); min-height: 100vh; padding: 12
 </style>
 
 <script>
-/* qrcode-mini.js algorithm embedded locally inside client memory */
-var QRCode=function(){function f(a,b){this.typeNumber=a;this.errorCorrectLevel=b;this.modules=null;this.moduleCount=0;this.dataCache=null;this.dataList=[]}function q(a,b){if(void 0==a.length)throw Error(a.length+"/"+b);for(var c=0;c<a.length&&0==a[c];)c++;this.num=Array(a.length-c+b);for(var d=0;d<a.length-c;d++)this.num[d]=a[d+c]}function p(a,b){this.toNum=a;this.data=b}f.prototype={addData:function(a){a=new p(4,a);this.dataList.push(a);this.dataCache=null},isDark:function(a,b){if(0>a||this.moduleCount<=a||0>b||this.moduleCount<=b)throw Error(a+","+b);return this.modules[a][b]},getModuleCount:function(){return this.moduleCount},make:function(){this.makeImpl(!1,this.getBestMaskPattern())},makeImpl:function(a,b){this.moduleCount=4*this.typeNumber+17;this.modules=Array(this.moduleCount);for(var c=0;c<this.moduleCount;c++){this.modules[c]=Array(this.moduleCount);for(var d=0;d<this.moduleCount;d++)this.modules[c][d]=null}this.setupPositionProbePattern(0,0);this.setupPositionProbePattern(this.moduleCount-7,0);this.setupPositionProbePattern(0,this.moduleCount-7);this.setupPositionAdjustPattern();this.setupTimingPattern();this.setupTypeInfo(a,b);7<=this.typeNumber&&this.setupTypeNumber(a);null==this.dataCache&&(this.dataCache=f.createData(this.typeNumber,this.errorCorrectLevel,this.dataList));this.mapData(this.dataCache,b)},setupPositionProbePattern:function(a,b){for(var c=-1;7>=c;c++)if(!(-1>a+c||this.moduleCount<=a+c))for(var d=-1;7>=d;d++)-1>b+d||this.moduleCount<=b+d||(0<=c&&6>=c&&(0==c||6==c)||0<=d&&6>=d&&(0==d||6==d)||2<=c&&4>=c&&2<=d&&4>=d?this.modules[a+c][b+d]=!0:this.modules[a+c][b+d]=!1)},getBestMaskPattern:function(){for(var a=0,b=0,c=0;8<c;c++){this.makeImpl(!0,c);var d=h.getLostPoint(this);if(0==c||a>d)a=d,b=c}return b},setupTimingPattern:function(){for(var a=8;this.moduleCount-8>a;a++)null==this.modules[a][6]&&(this.modules[a][6]=0==a%2);for(var b=8;this.moduleCount-8>b;b++)null==this.modules[6][b]&&(this.modules[6][b]=0==b%2)},setupPositionAdjustPattern:function(){for(var a=h.getPatternPosition(this.typeNumber),b=0;b<a.length;b++)for(var c=0;c<a.length;c++){var d=a[b],e=a[c];if(null==this.modules[d][e])for(var g=-2;2>=g;g++)for(var k=-2;2>=k;k++)-2==g||2==g||-2==k||2==k||0==g&&0==k?this.modules[d+g][e+k]=!0:this.modules[d+g][e+k]=!1}},setupTypeInfo:function(a,b){for(var c=this.errorCorrectLevel<<3|b,d=h.getBCHTypeInfo(c),e=0;15>e;e++){var g=!a&&1==(d>>e&1);6>e?this.modules[e][8]=g:8>e?this.modules[e+1][8]=g:this.modules[this.moduleCount-15+e][8]=g}for(e=0;15>e;e++)g=!a&&1==(d>>e&1),8>e?this.modules[8][this.moduleCount-e-1]=g:9>e?this.modules[8][15-e-1+1]=g:this.modules[8][15-e-1]=g;this.modules[this.moduleCount-8][8]=!a},setupTypeNumber:function(a){for(var b=h.getBCHTypeNumber(this.typeNumber),c=0;18<c;c++){var d=!a&&1==(b>>c&1);this.modules[Math.floor(c/3)][c%3+this.moduleCount-8-3]=d}for(c=0;18<c;c++)d=!a&&1==(b>>c&1),this.modules[c%3+this.moduleCount-8-3][Math.floor(c/3)]=d},mapData:function(a,b){for(var c=-1,d=this.moduleCount-1,e=7,g=0,k=this.moduleCount-1;0<k;k-=2)for(6==k&&k--;;){for(var h=0;2>h;h++){var f=d;if(null==this.modules[f][k-h]){var l=!1;g<a.length&&(l=1==(a[g]>>e&1));if(h.getMask(b,f,k-h))l=!l;this.modules[f][k-h]=l;e--;-1==e&&(g++,e=7)}}d+=c;if(0>d||this.moduleCount<=d){d-=c;c=-c;break}}}},f.createData=function(a,b,c){b=r.getRSBlocks(a,b);for(var d=new m,e=0;e<c.length;e++){var g=c[e];d.put(g.toNum,4);d.put(g.data.length,h.getLengthInBits(g.toNum,a));for(var k=0;k<g.data.length;k++)d.put(g.data.charCodeAt(k),8)}for(var f=0,e=0;e<b.length;e++)f+=b[e].dataCount;if(d.getLengthInBits()>8*f)throw Error("code length overflow. ("+d.getLengthInBits()+">"+8*f+")");for(d.getLengthInBits()+4<=8*f&&d.put(0,4);0!=d.getLengthInBits()%8;)d.putBit(!1);for(;!(d.getLengthInBits()>=8*f);){d.put(170,8);if(d.getLengthInBits()>=8*f)break;d.put(60,8)}return f.createBytes(d,b)};p.prototype={getLength:function(){return this.data.length}};q.prototype={getAt:function(a){return this.num[a]},getLength:function(){return this.num.length},multiply:function(a){for(var b=Array(this.getLength()+a.getLength()-1),c=0;c<this.getLength();c++)for(var d=0;d<a.getLength();d++)b[c+d]^=h.glog(this.getAt(c))+h.glog(a.getAt(d));return new q(b,0)},mod:function(a){if(0>this.getLength()-a.getLength())return this;for(var b=h.glog(this.getAt(0))-h.glog(a.getAt(0)),c=Array(this.getLength()),d=0;d<this.getLength();d++)c[d]=this.getAt(d);for(d=0;d<a.getLength();d++)c[d]^=h.gexp(h.glog(a.getAt(d))+b);return(new q(c,0)).mod(a)}};var r=function(a,b){this.totalCount=a;this.dataCount=b};r.RS_BLOCK_TABLE=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19,1,44,20],[4,43,15,2,44,16],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,4,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,4,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,43,27,1,44,28],[6,43,19,2,44,20],[6,43,15,2,44,16]];r.getRSBlocks=function(a,b){var c=r.getRsBlockTable(a,b);if(void 0==c)throw Error("bad rs block @ typeNumber:"+a+"/errorCorrectLevel:"+b);for(var d=c.length/3,e=[],g=0;g<d;g++)for(var k=c[3*g],f=c[3*g+1],h=c[3*g+2],l=0;l<k;l++)e.push(new r(f,h));return e};r.getRsBlockTable=function(a,b){switch(b){case 1:return r.RS_BLOCK_TABLE[4*(a-1)+0];case 0:return r.RS_BLOCK_TABLE[4*(a-1)+1];case 3:return r.RS_BLOCK_TABLE[4*(a-1)+2];case 2:return r.RS_BLOCK_TABLE[4*(a-1)+3]}};f.createBytes=function(a,b){for(var c=0,d=0,e=0,g=Array(b.length),k=Array(b.length),f=0;f<b.length;f++){var h=b[f].dataCount,l=b[f].totalCount-h,d=Math.max(d,h),e=Math.max(e,l);g[f]=Array(h);for(var n=0;n<g[f].length;n++)g[f][n]=255&a.buffer[n+c];c+=h;var m=h,p=l,r=Array(p);for(n=0;n<p;n++)r[n]=0;m=new q(g[f],p);p=(new q([1],0)).multiply(new q(h.QR_MATH_EXP_TABLE[p],0));p=m.mod(p);k[f]=Array(p.getLength()-1);for(n=0;n<k[f].length;n++)k[f][n]=p.getAt(n+p.getLength()-k[f].length)}for(f=n=0;f<b.length;f++)n+=b[f].totalCount;c=Array(n);for(n=f=0;f<d;f++)for(h=0;h<b.length;h++)f<g[h].length&&(c[n++]=g[h][f]);for(f=0;f<e;f++)for(h=0;h<b.length;h++)f<k[h].length&&(c[n++]=k[h][f]);return c};var h={QR_MATH_EXP_TABLE:function(){for(var a=Array(256),b=0;8>b;b++)a[b]=1<<b;for(b=8;256>b;b++)a[b]=a[b-4]^a[b-5]^a[b-6]^a[b-8];return a}(),QR_MATH_LOG_TABLE:function(){for(var a=Array(256),b=0;256>b;b++)a[b]=0;for(b=0;255>b;b++)a[h.QR_MATH_EXP_TABLE[b]]=b;return a}(),glog:function(a){if(1>a)throw Error("glog("+a+")");return h.QR_MATH_LOG_TABLE[a]},gexp:function(a){for(;0>a;)a+=255;for(;256<=a;)a-=255;return h.QR_MATH_EXP_TABLE[a]},getBCHTypeInfo:function(a){for(var b=a<<10;0<=h.getBCHDigit(b)-h.getBCHDigit(1335);)b^=1335<<(h.getBCHDigit(b)-h.getBCHDigit(1335));return(a<<10|b)^21522},getBCHTypeNumber:function(a){for(var b=a<<12;0<=h.getBCHDigit(b)-h.getBCHDigit(7973);)b^=7973<<(h.getBCHDigit(b)-h.getBCHDigit(7973));return a<<12|b},getBCHDigit:function(a){for(var b=0;0!=a;)b++,a>>>=1;return b},getPatternPosition:function(a){return h.PATTERN_POSITION_TABLE[a-1]},PATTERN_POSITION_TABLE:[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,26,52,78],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166]],getLengthInBits:function(a,b){if(1<=b&&10>b)switch(a){case 4:return 8;case 8:return 16;default:return 10}else if(27>b)switch(a){case 4:return 16;case 8:return 16;default:return 12}else if(41>b)switch(a){case 4:return 16;case 8:return 16;default:return 14}else throw Error("type:"+b);},getLostPoint:function(a){for(var b=a.getModuleCount(),c=0,d=0;d<b;d++)for(var e=0;e<b;e++){for(var g=0,f=a.isDark(d,e),h=-1;1>=h;h++)if(!(0>d+h||b<=d+h))for(var l=-1;1>=l;l++)0>e+l||b<=e+l||0==h&&0==l||f==a.isDark(d+h,e+l)&&g++;5<g&&(c+=3+g-5)}for(d=0;d<b-1;d++)for(e=0;e<b-1;e++)if(g=0,a.isDark(d,e)&&g++,a.isDark(d+1,e)&&g++,a.isDark(d,e+1)&&g++,a.isDark(d+1,e+1)&&g++,0==g||4==g)c+=3;for(d=0;d<b;d++)for(e=0;e<b-6;e++)a.isDark(d,e)&&!a.isDark(d,e+1)&&a.isDark(d,e+2)&&a.isDark(d,e+3)&&a.isDark(d,e+4)&&!a.isDark(d,e+5)&&a.isDark(d,e+6)&&(c+=40);for(e=0;e<b;e++)for(d=0;d<b-6;d++)a.isDark(d,e)&&!a.isDark(d+1,e)&&a.isDark(d+2,e)&&a.isDark(d+3,e)&&a.isDark(d+4,e)&&!a.isDark(d+5,e)&&a.isDark(d+6,e)&&(c+=40);for(var m=0,e=0;e<b;e++)for(d=0;d<b;d++)a.isDark(d,e)&&m++;return c+10*(Math.abs(100*m/b/b-50)/5)},getMask:function(a,b,c){switch(a){case 0:return 0==(b+c)%2;case 1:return 0==b%2;case 2:return 0==c%3;case 3:return 0==(b+c)%3;case 4:return 0==(Math.floor(b/2)+Math.floor(c/3))%2;case 5:return 0==b*c%2+b*c%3;case 6:return 0==(b*c%2+b*c%3)%2;case 7:return 0==(b*c%3+(b+c)%2)%2;default:throw Error("bad maskPattern:"+a);}}};var m=function(){this.buffer=[];this.length=0};m.prototype={get:function(a){return 1==(this.buffer[Math.floor(a/8)]>>7-a%8&1)},put:function(a,b){for(var c=0;c<b;c++)this.putBit(1==(a>>b-c-1&1))},getLengthInBits:function(){return this.length},putBit:function(a){var b=Math.floor(this.length/8);this.buffer.length<=b&&this.buffer.push(0);a&&(this.buffer[b]|=128>>this.length%8);this.length++}};return function(a,b){var c=new f(4,1);c.addData(a);c.make();var d=b||{};b=d.size||200;d=d.margin||0;var e=document.createElement("canvas");e.width=b;e.height=b;var g=e.getContext("2d"),k=c.getModuleCount(),h=Math.floor((b-2*d)/k),l=Math.floor((b-h*k)/2);g.fillStyle="#ffffff";g.fillRect(0,0,b,b);g.fillStyle="#000000";for(var m=0;m<k;m++)for(var n=0;n<k;n++)c.isDark(m,n)&&g.fillRect(l+n*h,l+m*h,h,h);return e}}();
+var QRCode=function(){function f(a,b){this.typeNumber=a;this.errorCorrectLevel=b;this.modules=null;this.moduleCount=0;this.dataCache=null;this.dataList=[]}function q(a,b){if(void 0==a.length)throw Error(a.length+"/"+b);for(var c=0;c<a.length&&0==a[c];)c++;this.num=Array(a.length-c+b);for(var d=0;d<a.length-c;d++)this.num[d]=a[d+c]}function p(a,b){this.toNum=a;this.data=b}f.prototype={addData:function(a){a=new p(4,a);this.dataList.push(a);this.dataCache=null},isDark:function(a,b){if(0>a||this.moduleCount<=a||0>b||this.moduleCount<=b)throw Error(a+","+b);return this.modules[a][b]},getModuleCount:function(){return this.moduleCount},make:function(){this.makeImpl(!1,this.getBestMaskPattern())},makeImpl:function(a,b){this.moduleCount=4*this.typeNumber+17;this.modules=Array(this.moduleCount);for(var c=0;c<this.moduleCount;c++){this.modules[c]=Array(this.moduleCount);for(var d=0;d<this.moduleCount;d++)this.modules[c][d]=null}this.setupPositionProbePattern(0,0);this.setupPositionProbePattern(this.moduleCount-7,0);this.setupPositionProbePattern(0,this.moduleCount-7);this.setupPositionAdjustPattern();this.setupTimingPattern();this.setupTypeInfo(a,b);7<=this.typeNumber&&this.setupTypeNumber(a);null==this.dataCache&&(this.dataCache=f.createData(this.typeNumber,this.errorCorrectLevel,this.dataList));this.mapData(this.dataCache,b)},setupPositionProbePattern:function(a,b){for(var c=-1;7>=c;c++)if(!(-1>a+c||this.moduleCount<=a+c))for(var d=-1;7>=d;d++)-1>b+d||this.moduleCount<=b+d||(0<=c&&6>=c&&(0==c||6==c)||0<=d&&6>=d&&(0==d||6==d)||2<=c&&4>=c&&2<=d&&4>=d?this.modules[a+c][b+d]=!0:this.modules[a+c][b+d]=!1)},getBestMaskPattern:function(){for(var a=0,b=0,c=0;8<c;c++){this.makeImpl(!0,c);var d=h.getLostPoint(this);if(0==c||a>d)a=d,b=c}return b},setupTimingPattern:function(){for(var a=8;this.moduleCount-8>a;a++)null==this.modules[a][6]&&(this.modules[a][6]=0==a%2);for(var b=8;this.moduleCount-8>b;b++)null==this.modules[6][b]&&(this.modules[6][b]=0==b%2)},setupPositionAdjustPattern:function(){for(var a=h.getPatternPosition(this.typeNumber),b=0;b<a.length;b++)for(var c=0;c<a.length;c++){var d=a[b],e=a[c];if(null==this.modules[d][e])for(var g=-2;2>=g;g++)for(var k=-2;2>=k;k++)-2==g||2==g||-2==k||2==k||0==g&&0==k?this.modules[d+g][e+k]=!0:this.modules[d+g][e+k]=!1}},setupTypeInfo:function(a,b){for(var c=this.errorCorrectLevel<<3|b,d=h.getBCHTypeInfo(c),e=0;15>e;e++){var g=!a&&1==(d>>e&1);6>e?this.modules[e][8]=g:8>e?this.modules[e+1][8]=g:this.modules[this.moduleCount-15+e][8]=g}for(e=0;15>e;e++)g=!a&&1==(d>>e&1),8>e?this.modules[8][this.moduleCount-e-1]=g:9>e?this.modules[8][15-e-1+1]=g:this.modules[8][15-e-1]=g;this.modules[this.moduleCount-8][8]=!a},setupTypeNumber:function(a){for(var b=h.getBCHTypeNumber(this.typeNumber),c=0;18<c;c++){var d=!a&&1==(b>>c&1);this.modules[Math.floor(c/3)][c%3+this.moduleCount-8-3]=d}for(c=0;18<c;c++)d=!a&&1==(b>>c&1),this.modules[c%3+this.moduleCount-8-3][Math.floor(c/3)]=d},mapData:function(a,b){for(var c=-1,d=this.moduleCount-1,e=7,g=0,k=this.moduleCount-1;0<k;k-=2)for(6==k&&k--;;){for(var h=0;2>h;h++){var f=d;if(null==this.modules[f][k-h]){var l=!1;g<a.length&&(l=1==(a[g]>>e&1));if(h.getMask(b,f,k-h))l=!l;this.modules[f][k-h]=l;e--;-1==e&&(g++,e=7)}}d+=c;if(0>d||this.moduleCount<=d){d-=c;c=-c;break}}}},f.createData=function(a,b,c){b=r.getRSBlocks(a,b);for(var d=new m,e=0;e<c.length;e++){var g=c[e];d.put(g.toNum,4);d.put(g.data.length,h.getLengthInBits(g.toNum,a));for(var k=0;k<g.data.length;k++)d.put(g.data.charCodeAt(k),8)}for(var f=0,e=0;e<b.length;e++)f+=b[e].dataCount;if(d.getLengthInBits()>8*f)throw Error("overflow");for(d.getLengthInBits()+4<=8*f&&d.put(0,4);0!=d.getLengthInBits()%8;)d.putBit(!1);for(;!(d.getLengthInBits()>=8*f);){d.put(170,8);if(d.getLengthInBits()>=8*f)break;d.put(60,8)}return f.createBytes(d,b)};p.prototype={getLength:function(){return this.data.length}};q.prototype={getAt:function(a){return this.num[a]},getLength:function(){return this.num.length},multiply:function(a){for(var b=Array(this.getLength()+a.getLength()-1),c=0;c<this.getLength();c++)for(var d=0;d<a.getLength();d++)b[c+d]^=h.glog(this.getAt(c))+h.glog(a.getAt(d));return new q(b,0)},mod:function(a){if(0>this.getLength()-a.getLength())return this;for(var b=h.glog(this.getAt(0))-h.glog(a.getAt(0)),c=Array(this.getLength()),d=0;d<this.getLength();d++)c[d]=this.getAt(d);for(d=0;d<a.getLength();d++)c[d]^=h.gexp(h.glog(a.getAt(d))+b);return(new q(c,0)).mod(a)}};var r=function(a,b){this.totalCount=a;this.dataCount=b};r.RS_BLOCK_TABLE=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19,1,44,20],[4,43,15,2,44,16],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,4,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,4,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,43,27,1,44,28],[6,43,19,2,44,20],[6,43,15,2,44,16]];r.getRSBlocks=function(a,b){var c=r.getRsBlockTable(a,b);if(void 0==c)throw Error("bad rs block");for(var d=c.length/3,e=[],g=0;g<d;g++)for(var k=c[3*g],f=c[3*g+1],h=c[3*g+2],l=0;l<k;l++)e.push(new r(f,h));return e};r.getRsBlockTable=function(a,b){switch(b){case 1:return r.RS_BLOCK_TABLE[4*(a-1)+0];case 0:return r.RS_BLOCK_TABLE[4*(a-1)+1];case 3:return r.RS_BLOCK_TABLE[4*(a-1)+2];case 2:return r.RS_BLOCK_TABLE[4*(a-1)+3]}};f.createBytes=function(a,b){for(var c=0,d=0,e=0,g=Array(b.length),k=Array(b.length),f=0;f<b.length;f++){var h=b[f].dataCount,l=b[f].totalCount-h,d=Math.max(d,h),e=Math.max(e,l);g[f]=Array(h);for(var n=0;n<g[f].length;n++)g[f][n]=255&a.buffer[n+c];c+=h;var m=h,p=l,r=Array(p);for(n=0;n<p;n++)r[n]=0;m=new q(g[f],p);p=(new q([1],0)).multiply(new q(h.QR_MATH_EXP_TABLE[p],0));p=m.mod(p);k[f]=Array(p.getLength()-1);for(n=0;n<k[f].length;n++)k[f][n]=p.getAt(n+p.getLength()-k[f].length)}for(f=n=0;f<b.length;f++)n+=b[f].totalCount;c=Array(n);for(n=f=0;f<d;f++)for(h=0;h<b.length;h++)f<g[h].length&&(c[n++]=g[h][f]);for(f=0;f<e;f++)for(h=0;h<b.length;h++)f<k[h].length&&(c[n++]=k[h][f]);return c};var h={QR_MATH_EXP_TABLE:function(){for(var a=Array(256),b=0;8>b;b++)a[b]=1<<b;for(b=8;256>b;b++)a[b]=a[b-4]^a[b-5]^a[b-6]^a[b-8];return a}(),QR_MATH_LOG_TABLE:function(){for(var a=Array(256),b=0;256>b;b++)a[b]=0;for(b=0;255>b;b++)a[h.QR_MATH_EXP_TABLE[b]]=b;return a}(),glog:function(a){if(1>a)throw Error("glog");return h.QR_MATH_LOG_TABLE[a]},gexp:function(a){for(;0>a;)a+=255;for(;256<=a;)a-=255;return h.QR_MATH_EXP_TABLE[a]},getBCHTypeInfo:function(a){for(var b=a<<10;0<=h.getBCHDigit(b)-h.getBCHDigit(1335);)b^=1335<<(h.getBCHDigit(b)-h.getBCHDigit(1335));return(a<<10|b)^21522},getBCHTypeNumber:function(a){for(var b=a<<12;0<=h.getBCHDigit(b)-h.getBCHDigit(7973);)b^=7973<<(h.getBCHDigit(b)-h.getBCHDigit(7973));return a<<12|b},getBCHDigit:function(a){for(var b=0;0!=a;)b++,a>>>=1;return b},getPatternPosition:function(a){return h.PATTERN_POSITION_TABLE[a-1]},PATTERN_POSITION_TABLE:[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,26,52,78],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166]],getLengthInBits:function(a,b){if(1<=b&&10>b)switch(a){case 4:return 8;case 8:return 16;default:return 10}else if(27>b)switch(a){case 4:return 16;case 8:return 16;default:return 12}else if(41>b)switch(a){case 4:return 16;case 8:return 16;default:return 14}else throw Error("type:"+b)},getLostPoint:function(a){for(var b=a.getModuleCount(),c=0,d=0;d<b;d++)for(var e=0;e<b;e++){for(var g=0,f=a.isDark(d,e),h=-1;1>=h;h++)if(!(0>d+h||b<=d+h))for(var l=-1;1>=l;l++)0>e+l||b<=e+l||0==h&&0==l||f==a.isDark(d+h,e+l)&&g++;5<g&&(c+=3+g-5)}for(d=0;d<b-1;d++)for(e=0;e<b-1;e++)if(g=0,a.isDark(d,e)&&g++,a.isDark(d+1,e)&&g++,a.isDark(d,e+1)&&g++,a.isDark(d+1,e+1)&&g++,0==g||4==g)c+=3;for(d=0;d<b;d++)for(e=0;e<b-6;e++)a.isDark(d,e)&&!a.isDark(d,e+1)&&a.isDark(d,e+2)&&a.isDark(d,e+3)&&a.isDark(d,e+4)&&!a.isDark(d,e+5)&&a.isDark(d,e+6)&&(c+=40);for(e=0;e<b;e++)for(d=0;d<b-6;d++)a.isDark(d,e)&&!a.isDark(d+1,e)&&a.isDark(d+2,e)&&a.isDark(d+3,e)&&a.isDark(d+4,e)&&!a.isDark(d+5,e)&&a.isDark(d+6,e)&&(c+=40);for(var m=0,e=0;e<b;e++)for(d=0;d<b;d++)a.isDark(d,e)&&m++;return c+10*(Math.abs(100*m/b/b-50)/5)},getMask:function(a,b,c){switch(a){case 0:return 0==(b+c)%2;case 1:return 0==b%2;case 2:return 0==c%3;case 3:return 0==(b+c)%3;case 4:return 0==(Math.floor(b/2)+Math.floor(c/3))%2;case 5:return 0==b*c%2+b*c%3;case 6:return 0==(b*c%2+b*c%3)%2;case 7:return 0==(b*c%3+(b+c)%2)%2;default:throw Error("bad mask")}}};var m=function(){this.buffer=[];this.length=0};m.prototype={get:function(a){return 1==(this.buffer[Math.floor(a/8)]>>7-a%8&1)},put:function(a,b){for(var c=0;c<b;c++)this.putBit(1==(a>>b-c-1&1))},getLengthInBits:function(){return this.length},putBit:function(a){var b=Math.floor(this.length/8);this.buffer.length<=b&&this.buffer.push(0);a&&(this.buffer[b]|=128>>this.length%8);this.length++}};return function(a,b){var c=new f(4,1);c.addData(a);c.make();var d=b||{};b=d.size||180;d=d.margin||0;var e=document.createElement("canvas");e.width=b;e.height=b;var g=e.getContext("2d"),k=c.getModuleCount(),h=Math.floor((b-2*d)/k),l=Math.floor((b-h*k)/2);g.fillStyle="#ffffff";g.fillRect(0,0,b,b);g.fillStyle="#000000";for(var m=0;m<k;m++)for(var n=0;n<k;n++)c.isDark(m,n)&&g.fillRect(l+n*h,l+m*h,h,h);return e}}();
 </script>
 </head>
 <body>
 
 <div class="app-container">
-
   <div class="header">
     <div>
-      <h1 id="shopTitle">Hotel Billing</h1>
-      <p id="shopSubTitle">100% Offline Terminal</p>
+      <h1 id="shopTitle">Soni Hotel</h1>
+      <p>100% Offline Multi-Mode App</p>
     </div>
-    <button class="tab" style="max-width:80px; padding:6px;" onclick="switchTab('config')">⚙️ Setup</button>
+    <button class="tab" style="max-width:80px; padding:6px; background:#fff; color:#000;" onclick="switchTab('config')">⚙️ Setup</button>
   </div>
 
   <div class="tabs">
-    <div class="tab active" id="tab-billing" onclick="switchTab('billing')">🧾 New Bill</div>
-    <div class="tab" id="tab-menu" onclick="switchTab('menu')">📋 Menu Items</div>
+    <button class="tab active" id="tab-billing" onclick="switchTab('billing')">🧾 New Bill</button>
+    <button class="tab" id="tab-menu" onclick="switchTab('menu')">📋 Menu Items</button>
   </div>
 
   <div class="page active" id="page-billing">
     <div class="card">
-      <div class="card-title">Select Items To Add</div>
-      <div id="billingMenuContainer">
-        </div>
+      <div class="card-title">Select Items</div>
+      <div id="billingMenuContainer"></div>
     </div>
 
     <div class="card">
-      <div class="card-title">Current Order List</div>
+      <div class="card-title">Current Order</div>
       <div id="cartContainer">
-        <p style="color:var(--muted); font-size:13px; text-align:center;">Koi item add nahi kiya hai.</p>
+        <p style="color:var(--muted); font-size:13px; text-align:center;">Cart khali hai.</p>
       </div>
       <div class="cart-summary">
-        <span>Total Payable:</span>
+        <span>Total:</span>
         <span>₹<span id="cartTotalDisplay">0</span></span>
       </div>
-      <button class="btn-block" onclick="generateInvoiceReceipt()">🎯 Process & Generate Offline QR</button>
+      <button class="btn-block" onclick="generateInvoiceReceipt()">🎯 Process & Generate QR</button>
     </div>
 
     <div class="receipt-box" id="invoiceReceipt">
       <div id="printArea">
         <h2 style="font-size:16px; font-weight:800;" id="rcptShop">Shop Identity</h2>
-        <p style="font-size:11px; color:var(--muted);" id="rcptPhone">Contact details</p>
-        <p style="font-size:11px; border-bottom:1px dashed #ccc; padding-bottom:8px; margin-bottom:8px;">Date: Local Time Stream</p>
-
-        <div class="qr-container" id="offlineQrHolder">
-          </div>
-
+        <p style="font-size:11px; color:var(--muted);" id="rcptPhone"></p>
+        <p style="font-size:11px; border-bottom:1px dashed #ccc; padding-bottom:8px; margin-bottom:8px;">Date: Realtime Loop</p>
+        <div class="qr-container" id="offlineQrHolder"></div>
         <h3 style="font-size:24px; font-weight:800; color:var(--primary);">₹<span id="rcptAmount">0</span></h3>
         <p style="font-size:10px; color:var(--muted);" id="rcptUpi">merchant@upi</p>
       </div>
-
       <div class="no-print" style="margin-top:14px;">
-        <button class="btn-block btn-print" onclick="window.print()">🖨️ Print Thermal Invoice</button>
+        <button class="btn-block btn-print" onclick="window.print()">🖨️ Print Receipt</button>
       </div>
     </div>
   </div>
 
   <div class="page" id="page-config">
     <div class="card">
-      <div class="card-title">Merchant Endpoint Credentials</div>
+      <div class="card-title">Merchant Credentials</div>
       <div class="form-group">
-        <label>Shop/Hotel Name</label>
+        <label>Shop Name</label>
         <input type="text" id="cfgShopName" placeholder="e.g. Soni Hotel Baloda">
       </div>
       <div class="form-group">
-        <label>UPI ID (For Direct Payments)</label>
-        <input type="text" id="cfgUpiId" placeholder="e.g. soni@ybl, 9876543210@paytm">
+        <label>UPI ID</label>
+        <input type="text" id="cfgUpiId" placeholder="e.g. soni@ybl">
       </div>
       <div class="form-group">
-        <label>Contact Phone Number</label>
+        <label>Phone</label>
         <input type="text" id="cfgPhone" placeholder="e.g. 9876543210">
       </div>
-      <button class="btn-block" onclick="saveMerchantSettings()">💾 Deploy Security Parameters</button>
+      <button class="btn-block" onclick="saveMerchantSettings()">💾 Deploy Parameters</button>
     </div>
   </div>
 
   <div class="page" id="page-menu">
     <div class="card">
-      <div class="card-title">Add New Dish To Menu</div>
+      <div class="card-title">Add Dish</div>
       <div class="form-group">
         <label>Dish Name</label>
-        <input type="text" id="inDishName" placeholder="e.g. Paneer Butter Masala">
+        <input type="text" id="inDishName" placeholder="e.g. Paneer Tikka">
       </div>
       <div class="form-group">
         <label>Rate (₹)</label>
-        <input type="number" id="inDishPrice" placeholder="e.g. 150">
+        <input type="number" id="inDishPrice" placeholder="120">
       </div>
-      <button class="btn-block" onclick="addNewDishItem()">➕ Insert Item into Storage</button>
+      <button class="btn-block" onclick="addNewDishItem()">➕ Insert Item</button>
     </div>
-
     <div class="card">
-      <div class="card-title">Available Menu Catalog</div>
+      <div class="card-title">Menu Catalog</div>
       <div id="catalogContainer"></div>
     </div>
   </div>
-
 </div>
 
 <div class="toast" id="appToast"></div>
@@ -182,17 +168,15 @@ let activeCart = {};
 let config = {};
 
 window.onload = function() {
-  // Local storage mapping configurations
   try {
     config = JSON.parse(localStorage.getItem('htl_cfg') || '{}');
     menuList = JSON.parse(localStorage.getItem('htl_menu') || '[]');
   } catch(e) { config={}; menuList=[]; }
 
-  // Default standard dataset fallback injection if database returns blank
   if(menuList.length === 0) {
     menuList = [
-      { id: 1, name: 'Samosa Extra Pro', price: 15 },
-      { id: 2, name: 'Special Tea Baloda Blend', price: 10 },
+      { id: 1, name: 'Samosa Extra', price: 15 },
+      { id: 2, name: 'Special Tea', price: 10 },
       { id: 3, name: 'Premium Veg Thali', price: 120 }
     ];
     localStorage.setItem('htl_menu', JSON.stringify(menuList));
@@ -202,21 +186,20 @@ window.onload = function() {
     applyIdentityLayers();
     switchTab('billing');
   } else {
-    pushToast('⚙️ Pehle parameters configuration set karein!');
+    pushToast('⚙️ Pehle Setup me parameters check karein!');
     switchTab('config');
   }
 };
 
 function switchTab(target) {
-  document.getElementById('page-billing').classList.toggle('active', target==='billing');
+  document.getElementById('page-billing').style.display = target==='billing' ? 'block' : 'none';
   document.getElementById('tab-billing').classList.toggle('active', target==='billing');
-  document.getElementById('page-menu').classList.toggle('active', target==='menu');
+  document.getElementById('page-menu').style.display = target==='menu' ? 'block' : 'none';
   document.getElementById('tab-menu').classList.toggle('active', target==='menu');
-  document.getElementById('page-config').classList.toggle('active', target==='config');
+  document.getElementById('page-config').style.display = target==='config' ? 'block' : 'none';
   
-  if(target === 'billing') { renderBillingDesk(); }
-  if(target === 'menu') { renderCatalogGrid(); }
-  
+  if(target === 'billing') renderBillingDesk();
+  if(target === 'menu') renderCatalogGrid();
   if(target === 'config') {
     document.getElementById('cfgShopName').value = config.name || '';
     document.getElementById('cfgUpiId').value = config.upi || '';
@@ -228,13 +211,11 @@ function saveMerchantSettings() {
   const name = document.getElementById('cfgShopName').value.trim();
   const upi = document.getElementById('cfgUpiId').value.trim();
   const phone = document.getElementById('cfgPhone').value.trim();
-
-  if(!name || !upi) { pushToast('⚠️ Name aur UPI configurations zaroori hain!'); return; }
-  
+  if(!name || !upi) { pushToast('⚠️ Name aur UPI ID bharna zaroori hai!'); return; }
   config = { name, upi, phone };
   localStorage.setItem('htl_cfg', JSON.stringify(config));
   applyIdentityLayers();
-  pushToast('✅ Dynamic secure node deployed!');
+  pushToast('✅ Parameters Saved!');
   switchTab('billing');
 }
 
@@ -262,12 +243,8 @@ function renderBillingDesk() {
 function pushToCart(id) {
   const matchedItem = menuList.find(x => x.id === id);
   if(!matchedItem) return;
-
-  if(activeCart[id]) {
-    activeCart[id].qty++;
-  } else {
-    activeCart[id] = { name: matchedItem.name, price: matchedItem.price, qty: 1 };
-  }
+  if(activeCart[id]) activeCart[id].qty++;
+  else activeCart[id] = { name: matchedItem.name, price: matchedItem.price, qty: 1 };
   refreshCartView();
 }
 
@@ -285,7 +262,7 @@ function refreshCartView() {
   const keys = Object.keys(activeCart);
 
   if(keys.length === 0) {
-    container.innerHTML = '<p style="color:var(--muted); font-size:13px; text-align:center;">Order list khaali hai.</p>';
+    container.innerHTML = '<p style="color:var(--muted); font-size:13px; text-align:center;">Cart khali hai.</p>';
     document.getElementById('cartTotalDisplay').textContent = 0;
     document.getElementById('invoiceReceipt').classList.remove('show');
     return;
@@ -309,45 +286,32 @@ function refreshCartView() {
     `;
     container.appendChild(row);
   });
-
   document.getElementById('cartTotalDisplay').textContent = finalBillSum;
 }
 
-/* =========================================================================
-     CORE OFFLINE INJECTION ENGINE: Dynamic String & Matrix Render
-   ========================================================================= */
 function generateInvoiceReceipt() {
   const sum = parseFloat(document.getElementById('cartTotalDisplay').textContent);
-  if(sum <= 0) { pushToast('⚠️ Cart khali hai! Pehle items add karein.'); return; }
-  if(!config.upi) { pushToast('⚠️ Terminal identity parameters verify karein.'); switchTab('config'); return; }
+  if(sum <= 0) { pushToast('⚠️ Cart khali hai!'); return; }
+  if(!config.upi) { pushToast('⚠️ Setup me UPI ID set karein.'); switchTab('config'); return; }
 
-  // Intent payload compilation
   const upiUrlPattern = `upi://pay?pa=${encodeURIComponent(config.upi)}&pn=${encodeURIComponent(config.name)}&am=${sum}&cu=INR`;
-
-  // Clear previous canvas if any inside memory tree
   const targetHolder = document.getElementById('offlineQrHolder');
   targetHolder.innerHTML = '';
 
   try {
-    // Local memory matrix execution (0% Internet Usage)
     const pureOfflineCanvasElement = QRCode(upiUrlPattern, { size: 160, margin: 4 });
     targetHolder.appendChild(pureOfflineCanvasElement);
   } catch(err) {
-    pushToast('❌ Error compiling matrix data stream.');
+    pushToast('❌ QR Processing Error.');
     return;
   }
 
-  // Update target printing nodes
   document.getElementById('rcptShop').textContent = config.name;
   document.getElementById('rcptPhone').textContent = config.phone ? '📞 ' + config.phone : '';
   document.getElementById('rcptAmount').textContent = sum;
   document.getElementById('rcptUpi').textContent = config.upi;
-
   document.getElementById('invoiceReceipt').classList.add('show');
-  pushToast('🎯 Offline QR System Compiled successfully!');
-  
-  // Auto Scroll down to view compiled results
-  document.getElementById('invoiceReceipt').scrollIntoView({ behavior: 'smooth' });
+  pushToast('🎯 QR Compiled Successfully!');
 }
 
 function renderCatalogGrid() {
@@ -370,17 +334,13 @@ function renderCatalogGrid() {
 function addNewDishItem() {
   const name = document.getElementById('inDishName').value.trim();
   const price = parseFloat(document.getElementById('inDishPrice').value);
-
-  if(!name || isNaN(price) || price <= 0) { pushToast('⚠️ Name aur price sahi bharein!'); return; }
-  
+  if(!name || isNaN(price) || price <= 0) { pushToast('⚠️ Sahi detail daalein!'); return; }
   const newItem = { id: Date.now(), name, price };
   menuList.push(newItem);
   localStorage.setItem('htl_menu', JSON.stringify(menuList));
-  
   document.getElementById('inDishName').value = '';
   document.getElementById('inDishPrice').value = '';
-  
-  pushToast('✅ Item catalog me save ho gaya!');
+  pushToast('✅ Item Added!');
   renderCatalogGrid();
 }
 
@@ -388,13 +348,13 @@ function removeCatalogItem(id) {
   menuList = menuList.filter(x => x.id !== id);
   localStorage.setItem('htl_menu', JSON.stringify(menuList));
   renderCatalogGrid();
-  pushToast('🗑️ Item clear kiya gaya.');
+  pushToast('🗑️ Deleted!');
 }
 
 function pushToast(msg) {
   const t = document.getElementById('appToast');
   t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  setTimeout(() => t.classList.remove('show'), 2000);
 }
 </script>
 </body>
