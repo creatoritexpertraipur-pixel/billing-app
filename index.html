@@ -1,119 +1,736 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotel Offline Billing PWA</title>
-    <link rel="manifest" href="manifest.json">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <style>
-        :root { --primary: #007bff; --success: #28a745; --danger: #dc3545; --dark: #333; --light: #f4f4f9; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background-color: var(--light); color: var(--dark); }
-        
-        /* Navigation Tabs Bar */
-        .navbar { display: flex; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
-        .nav-item { flex: 1; text-align: center; padding: 15px 5px; font-weight: bold; font-size: 14px; cursor: pointer; color: #666; border-bottom: 3px solid transparent; }
-        .nav-item.active { color: var(--primary); border-bottom: 3px solid var(--primary); background: #f0f7ff; }
-        
-        .container { max-width: 600px; margin: 15px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .page { display: none; }
-        .page.active { display: block; }
-        
-        h1 { text-align: center; font-size: 22px; color: var(--primary); margin-top: 0; margin-bottom: 20px; }
-        h2 { font-size: 18px; border-left: 4px solid var(--primary); padding-left: 8px; margin-bottom: 15px; }
-        .form-group { margin-bottom: 12px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
-        input, textarea, select { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; }
-        
-        .btn { background: var(--primary); color: white; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; margin-top: 5px; }
-        .btn-success { background: var(--success); }
-        .btn-danger { background: var(--danger); padding: 5px 10px; font-size: 12px; width: auto; }
-        .flex-group { display: flex; gap: 10px; }
-        
-        ul { list-style: none; padding: 0; margin: 10px 0; }
-        li { background: #f8f9fa; padding: 10px; margin-bottom: 5px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .total-box { text-align: right; margin-top: 15px; padding: 10px; background: #e9ecef; border-radius: 6px; }
-        
-        #qrcode-container { margin-top: 15px; display: flex; flex-direction: column; align-items: center; background: #fff; padding: 10px; border-radius: 8px; }
-        #qrcode img { padding: 10px; background: white; border: 1px solid #ddd; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Hotel Billing</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f5f0e8; --card: #fff; --primary: #c0392b; --primary-dark: #96281b;
+  --accent: #e67e22; --text: #2c2c2c; --muted: #888; --border: #ddd;
+  --green: #27ae60; --shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
+
+/* HEADER */
+.header { background: var(--primary); color: white; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+
+/* TABS */
+.tabs { display: flex; background: #fff; border-bottom: 2px solid var(--border); position: sticky; top: 56px; z-index: 99; }
+.tab { flex: 1; padding: 12px 4px; text-align: center; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* PAGES */
+.page { display: none; padding: 14px; padding-bottom: 40px; }
+.page.active { display: block; }
+
+/* CARD */
+.card { background: var(--card); border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
+.card-title { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* INPUTS */
+input, select, textarea { width: 100%; padding: 11px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 15px; color: var(--text); background: #fafafa; margin-bottom: 10px; outline: none; -webkit-appearance: none; }
+input:focus, select:focus { border-color: var(--primary); background: #fff; }
+label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 3px; }
+
+/* BUTTONS */
+.btn { display: block; width: 100%; padding: 13px; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; border: none; text-align: center; -webkit-tap-highlight-color: transparent; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-green { background: var(--green); color: white; margin-top: 8px; }
+.btn-outline { background: transparent; border: 1.5px solid var(--primary); color: var(--primary); margin-top: 8px; }
+.btn-danger { background: #e74c3c; color: white; margin-top: 8px; }
+.btn-sm { padding: 7px 12px; font-size: 12px; border-radius: 6px; width: auto; display: inline-block; }
+
+/* MENU LIST */
+.item-row { display: flex; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--border); gap: 8px; }
+.item-row:last-child { border-bottom: none; }
+.item-info { flex: 1; }
+.item-name { font-weight: 600; font-size: 14px; }
+.item-meta { font-size: 11px; color: var(--muted); }
+.item-rate { color: var(--accent); font-weight: 700; min-width: 55px; text-align: right; font-size: 15px; }
+.item-actions { display: flex; gap: 6px; }
+
+/* BILL */
+.bill-item-row { display: flex; align-items: center; padding: 9px 0; border-bottom: 1px solid #f0f0f0; gap: 8px; }
+.bill-item-name { flex: 1; font-size: 14px; font-weight: 600; }
+.bill-item-sub { font-size: 11px; color: var(--muted); }
+.qty-control { display: flex; align-items: center; gap: 2px; }
+.qty-btn { width: 32px; height: 32px; border-radius: 50%; border: none; font-size: 20px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; -webkit-tap-highlight-color: transparent; }
+.qty-minus { background: #e74c3c; color: white; }
+.qty-plus { background: var(--green); color: white; }
+.qty-num { min-width: 30px; text-align: center; font-weight: 700; font-size: 16px; }
+.bill-item-amt { min-width: 58px; text-align: right; font-weight: 700; color: var(--accent); font-size: 14px; }
+
+/* TOTAL BAR */
+.total-bar { background: var(--primary); color: white; border-radius: 10px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
+.total-amount { font-size: 26px; font-weight: 800; }
+
+/* RECEIPT */
+.receipt { background: #fff; border-radius: 10px; padding: 16px; font-family: 'Courier New', monospace; font-size: 13px; box-shadow: var(--shadow); display: none; margin-top: 14px; }
+.receipt.show { display: block; }
+.receipt-header { text-align: center; border-bottom: 1px dashed #aaa; padding-bottom: 10px; margin-bottom: 10px; }
+.receipt-hotel { font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.receipt-line { display: flex; justify-content: space-between; padding: 2px 0; font-size: 13px; }
+.receipt-divider { border-top: 1px dashed #aaa; margin: 6px 0; }
+.receipt-total { font-weight: 700; font-size: 15px; }
+
+/* SCREEN ONLY QR DISPLAY */
+.qr-display-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 10px; padding: 10px; background: #fafafa; border-radius: 8px; border: 1px solid var(--border); }
+.qr-display-title { font-size: 11px; font-weight: bold; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; }
+
+/* MODAL */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 300; align-items: flex-end; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: white; border-radius: 16px 16px 0 0; padding: 20px 16px 30px; width: 100%; max-width: 480px; animation: slideUp 0.2s ease; max-height: 90vh; overflow-y: auto; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-title { font-weight: 700; font-size: 16px; margin-bottom: 16px; color: var(--primary); }
+.modal-row { display: flex; gap: 10px; margin-top: 4px; }
+.modal-row .btn { flex: 1; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2c2c2c; color: white; padding: 11px 22px; border-radius: 20px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; white-space: nowrap; }
+.toast.show { opacity: 1; }
+
+/* EMPTY */
+.empty { text-align: center; padding: 30px 16px; color: var(--muted); font-size: 14px; }
+.empty-icon { font-size: 40px; margin-bottom: 8px; }
+
+/* CONFIRM MODAL */
+.confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 400; align-items: center; justify-content: center; }
+.confirm-overlay.show { display: flex; }
+.confirm-box { background: white; border-radius: 14px; padding: 24px 20px; width: 90%; max-width: 320px; text-align: center; }
+.confirm-msg { font-size: 15px; margin-bottom: 20px; line-height: 1.5; }
+.confirm-row { display: flex; gap: 10px; }
+.confirm-row .btn { flex: 1; }
+
+@media print {
+  body * { visibility: hidden; }
+  #printArea, #printArea * { visibility: visible; }
+  #printArea { position: absolute; left: 0; top: 0; width: 58mm; font-family: 'Courier New', monospace; font-size: 10pt; }
+  .no-print-element { display: none !important; }
+}
+</style>
 </head>
 <body>
 
-<div class="navbar">
-    <div class="nav-item active" onclick="switchPage('billing-page', this)">🧾 Billing</div>
-    <div class="nav-item" onclick="switchPage('menu-page', this)">🍔 Manage Menu</div>
-    <div class="nav-item" onclick="switchPage('settings-page', this)">⚙️ Settings</div>
+<div class="header">
+  <div>
+    <div id="headerHotelName" style="font-size:17px;font-weight:700;">🍽️ Hotel Billing</div>
+    <div id="headerHotelSub" style="font-size:11px;opacity:0.85;">Soni Infotech</div>
+  </div>
+  <button class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;border:none;" onclick="showTab('settings')">⚙️ Settings</button>
 </div>
 
-<div class="container">
+<div class="tabs">
+  <div class="tab active" id="tab-billing" onclick="showTab('billing')">🧾 Bill</div>
+  <div class="tab" id="tab-menu" onclick="showTab('menu')">📋 Menu</div>
+  <div class="tab" id="tab-settings" onclick="showTab('settings')">⚙️ Settings</div>
+</div>
+
+<div class="page active" id="page-billing">
+  <div class="card">
+    <div class="card-title">Items Select Karo</div>
+    <input type="text" id="searchItem" placeholder="🔍 Search item..." oninput="renderBillItems()" autocomplete="off" />
+    <div id="billItemsList"></div>
+  </div>
+  <div class="total-bar">
+    <div>
+      <div style="font-size:13px;opacity:0.9;">Total Amount</div>
+      <div style="font-size:11px;opacity:0.75;" id="itemCountLabel">0 items</div>
+    </div>
+    <div class="total-amount">₹<span id="grandTotal">0</span></div>
+  </div>
+  <button class="btn btn-primary" onclick="generateBill()">🧾 Bill Generate Karo</button>
+  <button class="btn btn-outline" onclick="clearBill()" style="margin-top:8px;">🗑️ Clear Bill</button>
+
+  <div class="receipt" id="receipt">
+    <div id="printArea">
+      <div class="receipt-header">
+        <div class="receipt-hotel" id="rcptHotelName"></div>
+        <div id="rcptHotelAddr" style="font-size:11px;margin-top:2px;"></div>
+        <div id="rcptHotelPhone" style="font-size:11px;"></div>
+      </div>
+      <div style="font-size:11px;margin-bottom:6px;display:flex;justify-content:space-between;">
+        <span id="rcptBillNo"></span><span id="rcptDate"></span>
+      </div>
+      <div class="receipt-divider"></div>
+      <div id="rcptItems"></div>
+      <div class="receipt-divider"></div>
+      <div class="receipt-line receipt-total"><span>TOTAL</span><span>₹<span id="rcptTotal"></span></span></div>
+      <div class="receipt-divider"></div>
+      
+      <div id="qrCodeContainer" class="qr-display-container" style="display: none;">
+        <div class="qr-display-title no-print-element">Scan & Pay Using Any UPI App</div>
+        <div id="billQRCode"></div>
+        <div id="rcptUpiText" style="font-size:10px; margin-top:4px; font-weight:bold;"></div>
+      </div>
+      
+      <div class="receipt-divider id="qrDivider" style="display: none;"></div>
+      <div style="text-align:center;font-size:11px;margin-top:6px;" id="rcptFooter"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-primary" style="flex:2;" onclick="printBluetooth()">🖨️ Bluetooth Print</button>
+      <button class="btn btn-outline btn-sm" style="flex:1;" onclick="window.print()">🖨️ Normal</button>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-menu">
+  <div class="card">
+    <div class="card-title">✅ Naya Item Add Karo</div>
+    <label>Item ka Naam *</label>
+    <input type="text" id="newItemName" placeholder="e.g. Samosa, Chai, Dal..." autocomplete="off" />
+    <label>Rate (₹) *</label>
+    <input type="number" id="newItemRate" placeholder="e.g. 15" min="0" inputmode="numeric" />
+    <label>Category (optional)</label>
+    <input type="text" id="newItemCat" placeholder="e.g. Snacks, Beverages, Main Course" autocomplete="off" />
+    <button class="btn btn-green" onclick="addMenuItem()">➕ Add Item</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Menu List — <span id="menuCount">0</span> items</div>
+    <div id="menuList"></div>
+  </div>
+</div>
+
+<div class="page" id="page-settings">
+  <div class="card">
+    <div class="card-title">🏨 Hotel Ki Jankari</div>
+    <label>Hotel ka Naam *</label>
+    <input type="text" id="settHotelName" placeholder="e.g. Soni Hotel" autocomplete="off" />
+    <label>Address</label>
+    <input type="text" id="settHotelAddr" placeholder="e.g. Korba, Chhattisgarh" autocomplete="off" />
+    <label>Phone Number</label>
+    <input type="text" id="settHotelPhone" placeholder="e.g. 9876543210" inputmode="numeric" autocomplete="off" />
     
-    <div id="billing-page" class="page active">
-        <h1 id="displayShopName">🏨 Hotel Billing App</h1>
-        <h2>🧾 Customer Ka Bill Banayein</h2>
-        <div class="form-group flex-group">
-            <select id="billItemSelect"></select>
-            <input type="number" id="billItemQty" value="1" min="1" style="width: 70px;">
-            <button class="btn" onclick="addItemToCurrentBill()" style="margin:0; width:auto;">+ Jodein</button>
-        </div>
+    <label>UPI ID (For Auto QR Payment) *</label>
+    <input type="text" id="settHotelUPI" placeholder="e.g. sonihotel@upi, 9876543210@apl" autocomplete="off" />
+    
+    <label>Bill Footer Text</label>
+    <input type="text" id="settFooter" placeholder="e.g. Aapka Shukriya!" autocomplete="off" />
+    <button class="btn btn-primary" onclick="saveSettings()">💾 Settings Save Karo</button>
+  </div>
 
-        <table id="currentBillTable">
-            <thead>
-                <tr><th>Item</th><th>Rate</th><th>Qty</th><th>Total</th></tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        
-        <div class="total-box">
-            <h3 style="margin:0;">Grand Total: ₹<span id="finalTotal">0</span></h3>
-        </div>
-        
-        <button class="btn btn-success" onclick="printBill()" style="margin-top: 15px; font-size: 18px;">🖨️ Print & Show UPI QR</button>
+  <div class="card">
+    <div class="card-title">📦 Data Backup / Restore</div>
+    <button class="btn btn-outline" onclick="exportData()">📤 Backup Export (JSON)</button>
+    <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">📥 Backup Import</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)" />
+    <button class="btn btn-danger" onclick="askClearAll()">🗑️ Sab Data Delete</button>
+  </div>
+
+  <div class="card" style="background:#fff8e1;border-left:3px solid var(--accent);">
+    <div style="font-size:12px;color:#7d6608;line-height:1.7;">
+      <strong>📡 Bluetooth Printer & QR Tips:</strong><br>
+      • Ek baar UPI ID settings me save karein.<br>
+      • Bill generate karte hi ₹ Amount ke sath live QR Code ban jayega.<br>
+      • Android Chrome browser use karo.<br>
+      • Print dabao → printer select karo → pair karo.
     </div>
-
-    <div id="menu-page" class="page">
-        <h1>📋 Menu Management</h1>
-        <h2>🍔 Naye Items Jodein</h2>
-        <div class="form-group flex-group">
-            <input type="text" id="itemName" placeholder="Item Name (Samosa, Chai)">
-            <input type="number" id="itemPrice" placeholder="Price" style="width: 100px;">
-            <button class="btn" onclick="addMenuItem()" style="margin:0; width:auto;">Add</button>
-        </div>
-        
-        <h2>Current Menu Items</h2>
-        <ul id="menuList"></ul>
-    </div>
-
-    <div id="settings-page" class="page">
-        <h1>⚙️ Shop Profile Settings</h1>
-        <h2>🏪 Shop Details</h2>
-        <div class="form-group">
-            <label>Hotel / Shop Ka Naam:</label>
-            <input type="text" id="hotelName" placeholder="e.g., Sharma Ji Misthan Bhandar">
-        </div>
-        <div class="form-group">
-            <label>Hotel Ka Pata (Address):</label>
-            <textarea id="hotelAddress" rows="2" placeholder="e.g., Main Road, Ranchi"></textarea>
-        </div>
-        <div class="form-group">
-            <label>UPI ID (For QR Payment):</label>
-            <input type="text" id="hotelUPI" placeholder="e.g., sharma@apl">
-        </div>
-        <button class="btn" onclick="saveHotelSettings()">⚙️ Settings Save Karen</button>
-    </div>
-
+  </div>
 </div>
 
-<script src="app.js"></script>
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-title">✏️ Item Edit Karo</div>
+    <label>Item ka Naam *</label>
+    <input type="text" id="editName" placeholder="Item naam" autocomplete="off" />
+    <label>Rate (₹) *</label>
+    <input type="number" id="editRate" placeholder="Rate" inputmode="numeric" />
+    <label>Category</label>
+    <input type="text" id="editCat" placeholder="Category" autocomplete="off" />
+    <input type="hidden" id="editIndex" />
+    <div class="modal-row" style="margin-top:6px;">
+      <button class="btn btn-outline" onclick="closeEditModal()">❌ Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">✅ Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="confirm-overlay" id="confirmModal">
+  <div class="confirm-box">
+    <div class="confirm-msg" id="confirmMsg">Sure ho?</div>
+    <div class="confirm-row">
+      <button class="btn btn-outline" onclick="closeConfirm(false)">Cancel</button>
+      <button class="btn btn-danger" onclick="closeConfirm(true)">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-        .then(() => console.log("Service Worker Active!"))
-        .catch(err => console.log("Service Worker Error", err));
+// ===== STATE =====
+let menuItems = [];
+let settings  = {};
+let cart      = {};
+let billCounter = 1;
+let confirmCallback = null;
+let qrcodeInstance = null; // QR Instance handle
+
+// ===== LOAD FROM STORAGE =====
+function loadAll() {
+  try { menuItems = JSON.parse(localStorage.getItem('hb_menu') || '[]'); } catch(e) { menuItems = []; }
+  try { settings  = JSON.parse(localStorage.getItem('hb_settings') || '{}'); } catch(e) { settings = {}; }
+  billCounter = parseInt(localStorage.getItem('hb_billno') || '1');
+}
+
+function saveMenuStorage()     { localStorage.setItem('hb_menu', JSON.stringify(menuItems)); }
+function saveSettingsStorage() { localStorage.setItem('hb_settings', JSON.stringify(settings)); }
+
+// ===== INIT =====
+window.onload = function() {
+  loadAll();
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register("pwabuilder-adv-sw.js").catch(e => console.log(e));
+  }
+  // First time demo data
+  if (!menuItems.length && !localStorage.getItem('hb_init')) {
+    menuItems = [
+      {name:'Chai',         rate:10, cat:'Beverages'},
+      {name:'Coffee',       rate:20, cat:'Beverages'},
+      {name:'Samosa',       rate:15, cat:'Snacks'},
+      {name:'Bread Pakoda', rate:20, cat:'Snacks'},
+      {name:'Dal Tadka',    rate:80, cat:'Main Course'},
+      {name:'Chawal',       rate:50, cat:'Main Course'},
+      {name:'Roti',         rate:15, cat:'Main Course'},
+    ];
+    settings = { hotelName:'Soni Hotel', address:'Korba, Chhattisgarh', phone:'', upi:'sonihotel@upi', footer:'Aapka Shukriya! 🙏' };
+    saveMenuStorage();
+    saveSettingsStorage();
+    localStorage.setItem('hb_init','1');
+  }
+  applySettings();
+  renderMenuList();
+  renderBillItems();
+};
+
+// ===== TABS =====
+function showTab(tab) {
+  ['billing','menu','settings'].forEach(t => {
+    document.getElementById('page-'+t).classList.toggle('active', t===tab);
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+  });
+  if(tab==='menu')    { renderMenuList(); }
+  if(tab==='settings'){ fillSettingsForm(); }
+}
+
+// ===== SETTINGS =====
+function fillSettingsForm() {
+  document.getElementById('settHotelName').value  = settings.hotelName || '';
+  document.getElementById('settHotelAddr').value  = settings.address   || '';
+  document.getElementById('settHotelPhone').value = settings.phone     || '';
+  document.getElementById('settHotelUPI').value   = settings.upi       || '';
+  document.getElementById('settFooter').value     = settings.footer    || '';
+}
+
+function saveSettings() {
+  const name = document.getElementById('settHotelName').value.trim();
+  if(!name) { toast('⚠️ Hotel naam zaroori hai!'); return; }
+  settings.hotelName = name;
+  settings.address   = document.getElementById('settHotelAddr').value.trim();
+  settings.phone     = document.getElementById('settHotelPhone').value.trim();
+  settings.upi       = document.getElementById('settHotelUPI').value.trim();
+  settings.footer    = document.getElementById('settFooter').value.trim() || 'Aapka Shukriya!';
+  saveSettingsStorage();
+  applySettings();
+  toast('✅ Settings save ho gayi!');
+  showTab('billing'); // Save hote hi default billing open ho jayegi
+}
+
+function applySettings() {
+  document.getElementById('headerHotelName').textContent = '🍽️ ' + (settings.hotelName || 'Hotel Billing');
+  document.getElementById('headerHotelSub').textContent  = settings.address || 'Billing App';
+}
+
+// ===== MENU =====
+function addMenuItem() {
+  const nameEl = document.getElementById('newItemName');
+  const rateEl = document.getElementById('newItemRate');
+  const catEl  = document.getElementById('newItemCat');
+
+  const name = nameEl.value.trim();
+  const rate = parseFloat(rateEl.value);
+  const cat  = catEl.value.trim() || 'General';
+
+  if(!name)       { toast('⚠️ Item naam dalo!'); nameEl.focus(); return; }
+  if(isNaN(rate) || rate < 0) { toast('⚠️ Sahi rate dalo!'); rateEl.focus(); return; }
+
+  menuItems.push({ name, rate, cat });
+  saveMenuStorage();
+  renderMenuList();
+  renderBillItems();
+
+  nameEl.value = '';
+  rateEl.value = '';
+  catEl.value  = '';
+  nameEl.focus();
+  toast('✅ ' + name + ' add ho gaya!');
+}
+
+function deleteMenuItem(i) {
+  showConfirm('"' + menuItems[i].name + '" delete karein?', function() {
+    let newCart = {};
+    Object.keys(cart).forEach(k => {
+      let ki = parseInt(k);
+      if(ki < i)      newCart[ki]   = cart[ki];
+      else if(ki > i) newCart[ki-1] = cart[k];
+    });
+    cart = newCart;
+    menuItems.splice(i, 1);
+    saveMenuStorage();
+    renderMenuList();
+    renderBillItems();
+    updateTotal();
+    toast('🗑️ Item delete ho gaya');
+  });
+}
+
+function openEditModal(i) {
+  document.getElementById('editName').value  = menuItems[i].name;
+  document.getElementById('editRate').value  = menuItems[i].rate;
+  document.getElementById('editCat').value   = menuItems[i].cat  || '';
+  document.getElementById('editIndex').value = i;
+  document.getElementById('editModal').classList.add('show');
+  setTimeout(() => document.getElementById('editName').focus(), 100);
+}
+function closeEditModal() {
+  document.getElementById('editModal').classList.remove('show');
+}
+function saveEdit() {
+  const i    = parseInt(document.getElementById('editIndex').value);
+  const name = document.getElementById('editName').value.trim();
+  const rate = parseFloat(document.getElementById('editRate').value);
+  const cat  = document.getElementById('editCat').value.trim() || 'General';
+  if(!name)           { toast('⚠️ Naam dalo!'); return; }
+  if(isNaN(rate)||rate<0){ toast('⚠️ Rate sahi dalo!'); return; }
+  menuItems[i] = { name, rate, cat };
+  saveMenuStorage();
+  closeEditModal();
+  renderMenuList();
+  renderBillItems();
+  toast('✅ ' + name + ' update ho gaya!');
+}
+
+function renderMenuList() {
+  const list = document.getElementById('menuList');
+  document.getElementById('menuCount').textContent = menuItems.length;
+  if(!menuItems.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>Koi item nahi.<br>Upar se add karo.</div>';
+    return;
+  }
+  const cats = {};
+  menuItems.forEach((item, i) => {
+    const c = item.cat || 'General';
+    if(!cats[c]) cats[c] = [];
+    cats[c].push({...item, idx:i});
+  });
+  let html = '';
+  Object.keys(cats).forEach(cat => {
+    html += `<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:10px 0 4px;padding-top:4px;">${cat}</div>`;
+    cats[cat].forEach(item => {
+      html += `
+        <div class="item-row">
+          <div class="item-info">
+            <div class="item-name">${escHtml(item.name)}</div>
+          </div>
+          <div class="item-rate">₹${item.rate}</div>
+          <div class="item-actions">
+            <button class="btn btn-sm" style="background:var(--accent);color:white;" onclick="openEditModal(${item.idx})">✏️</button>
+            <button class="btn btn-sm" style="background:#e74c3c;color:white;" onclick="deleteMenuItem(${item.idx})">🗑️</button>
+          </div>
+        </div>`;
+    });
+  });
+  list.innerHTML = html;
+}
+
+// ===== BILLING =====
+function renderBillItems() {
+  const search = (document.getElementById('searchItem')?.value || '').toLowerCase().trim();
+  const list = document.getElementById('billItemsList');
+  if(!menuItems.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>Menu tab mein items add karo pehle.</div>';
+    return;
+  }
+  const filtered = menuItems
+    .map((item, i) => ({...item, idx:i}))
+    .filter(item => !search || item.name.toLowerCase().includes(search));
+
+  if(!filtered.length) {
+    list.innerHTML = '<div class="empty">Koi match nahi mila 🔍</div>';
+    return;
+  }
+  let html = '';
+  filtered.forEach(item => {
+    const qty = cart[item.idx] || 0;
+    const amt = qty * item.rate;
+    html += `
+      <div class="bill-item-row">
+        <div style="flex:1;">
+          <div class="bill-item-name">${escHtml(item.name)}</div>
+          <div class="bill-item-sub">₹${item.rate} each${item.cat ? ' · '+escHtml(item.cat) : ''}</div>
+        </div>
+        <div class="qty-control">
+          <button class="qty-btn qty-minus" onclick="changeQty(${item.idx},-1)">−</button>
+          <div class="qty-num">${qty}</div>
+          <button class="qty-btn qty-plus" onclick="changeQty(${item.idx},1)">+</button>
+        </div>
+        <div class="bill-item-amt">${qty>0?'₹'+amt:''}</div>
+      </div>`;
+  });
+  list.innerHTML = html;
+}
+
+function changeQty(idx, delta) {
+  const cur = cart[idx] || 0;
+  const nw  = Math.max(0, cur + delta);
+  if(nw === 0) delete cart[idx];
+  else cart[idx] = nw;
+  renderBillItems();
+  updateTotal();
+}
+
+function updateTotal() {
+  let total = 0, count = 0;
+  Object.keys(cart).forEach(i => {
+    if(menuItems[i]) { total += menuItems[i].rate * cart[i]; count += cart[i]; }
+  });
+  document.getElementById('grandTotal').textContent  = total;
+  document.getElementById('itemCountLabel').textContent = count + ' items';
+}
+
+function clearBill() {
+  if(!Object.keys(cart).length) return;
+  showConfirm('Bill clear karein?', function() {
+    cart = {};
+    renderBillItems();
+    updateTotal();
+    document.getElementById('receipt').classList.remove('show');
+    document.getElementById('qrCodeContainer').style.display = 'none';
+    document.getElementById('qrDivider').style.display = 'none';
+    toast('🗑️ Bill clear ho gaya');
+  });
+}
+
+function generateBill() {
+  const ordered = Object.keys(cart).filter(i => parseInt(i) < menuItems.length && cart[i] > 0);
+  if(!ordered.length) { toast('⚠️ Koi item select nahi kiya!'); return; }
+
+  const hotelName = settings.hotelName || 'Hotel';
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('hi-IN') + ' ' + now.toLocaleTimeString('hi-IN',{hour:'2-digit',minute:'2-digit'});
+  const billNo  = 'B-' + String(billCounter).padStart(4,'0');
+  billCounter++;
+  localStorage.setItem('hb_billno', billCounter);
+
+  let total = 0, itemsHtml = '';
+  ordered.forEach(i => {
+    const item = menuItems[i], qty = cart[i], amt = item.rate * qty;
+    total += amt;
+    itemsHtml += `<div class="receipt-line"><span>${escHtml(item.name)} ×${qty}</span><span>₹${amt}</span></div>`;
+  });
+
+  document.getElementById('rcptHotelName').textContent  = hotelName;
+  document.getElementById('rcptHotelAddr').textContent  = settings.address || '';
+  document.getElementById('rcptHotelPhone').textContent = settings.phone ? '📞 '+settings.phone : '';
+  document.getElementById('rcptBillNo').textContent  = billNo;
+  document.getElementById('rcptDate').textContent    = dateStr;
+  document.getElementById('rcptItems').innerHTML     = itemsHtml;
+  document.getElementById('rcptTotal').textContent   = total;
+  document.getElementById('rcptFooter').textContent  = settings.footer || 'Aapka Shukriya!';
+
+  // --- AUTOMATIC QR CODE SYSTEM ---
+  const qrContainer = document.getElementById('qrCodeContainer');
+  const qrDivider = document.getElementById('qrDivider');
+  const qrDiv = document.getElementById('billQRCode');
+  qrDiv.innerHTML = ""; // Purana QR clear karna
+
+  if(settings.upi && settings.upi.trim() !== "") {
+    // Standard Merchant/Retail UPI URL Format
+    const upiUrl = `upi://pay?pa=${encodeURIComponent(settings.upi.trim())}&pn=${encodeURIComponent(hotelName)}&am=${total}&cu=INR`;
+    
+    // Naya QR Code draw karna
+    qrcodeInstance = new QRCode(qrDiv, {
+      text: upiUrl,
+      width: 130,
+      height: 130,
+      colorDark : "#000000",
+      colorLight : "#ffffff",
+      correctLevel : QRCode.CorrectLevel.M
+    });
+    
+    document.getElementById('rcptUpiText').innerText = `UPI ID: ${settings.upi}`;
+    qrContainer.style.display = 'flex';
+    qrDivider.style.display = 'block';
+  } else {
+    qrContainer.style.display = 'none';
+    qrDivider.style.display = 'none';
+  }
+
+  const rcpt = document.getElementById('receipt');
+  rcpt.classList.add('show');
+  rcpt.scrollIntoView({behavior:'smooth', block:'start'});
+  toast('✅ Bill ready!');
+}
+
+// ===== BLUETOOTH PRINT WITH UPI LINK =====
+async function printBluetooth() {
+  const ordered = Object.keys(cart).filter(i => parseInt(i) < menuItems.length && cart[i] > 0);
+  if(!ordered.length) { toast('⚠️ Bill pehle generate karo'); return; }
+  if(!navigator.bluetooth) { toast('❌ Chrome browser use karo'); window.print(); return; }
+
+  const hotelName = settings.hotelName || 'Hotel';
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('hi-IN') + ' ' + now.toLocaleTimeString('hi-IN',{hour:'2-digit',minute:'2-digit'});
+  const billNo  = 'B-' + String(billCounter-1).padStart(4,'0');
+
+  let total = 0;
+  let body  = '';
+  ordered.forEach(i => {
+    const item = menuItems[i], qty = cart[i], amt = item.rate * qty;
+    total += amt;
+    const n = (item.name+'               ').substring(0,15);
+    const q = ('  '+qty).slice(-3);
+    const a = ('      '+amt).slice(-8);
+    body += n + ' x'+q + a + '\n';
+  });
+
+  // Printer apps (RawBT, Bluetooth Print) text links ko auto-QR me convert kar leti hain
+  let upiTextSection = '';
+  if(settings.upi) {
+    const upiLink = `upi://pay?pa=${encodeURIComponent(settings.upi.trim())}&pn=${encodeURIComponent(hotelName)}&am=${total}&cu=INR`;
+    upiTextSection = `\n[QR] ${upiLink}\nUPI: ${settings.upi}\n`;
+  }
+
+  const text =
+    '\x1B\x40' +                         // init
+    '\x1B\x61\x01' +                      // center
+    '\x1B\x21\x30' + hotelName + '\n' +   // big hotel name
+    '\x1B\x21\x00' +                      // normal
+    (settings.address ? settings.address+'\n' : '') +
+    (settings.phone   ? 'Ph: '+settings.phone+'\n' : '') +
+    '\x1B\x61\x00' +                      // left
+    '--------------------------------\n' +
+    billNo + '          ' + dateStr + '\n' +
+    '--------------------------------\n' +
+    'Item                Qty   Amount\n' +
+    '--------------------------------\n' +
+    body +
+    '--------------------------------\n' +
+    '\x1B\x61\x02' +                      // right
+    '\x1B\x21\x10' +
+    'TOTAL: Rs.' + total + '\n' +
+    '\x1B\x21\x00' +
+    '\x1B\x61\x01' +
+    upiTextSection +
+    '--------------------------------\n' +
+    '\n' + (settings.footer||'Aapka Shukriya!') + '\n\n\n' +
+    '\x1D\x56\x41\x03';                   // cut
+
+  try {
+    toast('🔍 Printer dhundh raha hai...');
+    const device = await navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: [
+        '000018f0-0000-1000-8000-00805f9b34fb',
+        '0000ff00-0000-1000-8000-00805f9b34fb',
+      ]
+    });
+    const server = await device.gatt.connect();
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    let printed = false;
+    const svcList = ['000018f0-0000-1000-8000-00805f9b34fb','0000ff00-0000-1000-8000-00805f9b34fb'];
+    const chrList = ['00002af1-0000-1000-8000-00805f9b34fb','0000ff02-0000-1000-8000-00805f9b34fb','0000ff01-0000-1000-8000-00805f9b34fb'];
+    for(const s of svcList) {
+      try {
+        const svc = await server.getPrimaryService(s);
+        for(const c of chrList) {
+          try {
+            const chr = await svc.getCharacteristic(c);
+            for(let o=0; o<data.length; o+=20) {
+              await chr.writeValue(data.slice(o,o+20));
+              await new Promise(r=>setTimeout(r,20));
+            }
+            printed = true; break;
+          } catch(e){}
+        }
+        if(printed) break;
+      } catch(e){}
     }
+    await server.disconnect();
+    toast(printed ? '✅ Print ho gaya!' : '⚠️ Data nahi gaya, normal print try karo');
+    if(!printed) window.print();
+  } catch(e) {
+    if(e.name==='NotFoundError') toast('❌ Printer select nahi kiya');
+    else { toast('⚠️ BT error — normal print ho raha hai'); window.print(); }
+  }
+}
+
+// ===== DATA EXPORT / IMPORT =====
+function exportData() {
+  const data = { menuItems, settings, exportDate: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'hotel_billing_backup.json';
+  a.click();
+  toast('✅ Backup download ho raha hai!');
+}
+function importData(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      if(d.menuItems) { menuItems = d.menuItems; saveMenuStorage(); }
+      if(d.settings)  { settings  = d.settings;  saveSettingsStorage(); }
+      applySettings(); fillSettingsForm(); renderMenuList(); renderBillItems();
+      toast('✅ Data import ho gaya!');
+    } catch(err) { toast('❌ File sahi nahi hai'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+function askClearAll() {
+  showConfirm('Sab data delete ho jayega!\nSure ho?', function() {
+    localStorage.clear();
+    menuItems=[]; settings={}; cart={}; billCounter=1;
+    renderMenuList(); renderBillItems(); updateTotal();
+    document.getElementById('receipt').classList.remove('show');
+    applySettings();
+    toast('🗑️ Sab data delete ho gaya');
+  });
+}
+
+// ===== CUSTOM CONFIRM =====
+function showConfirm(msg, cb) {
+  document.getElementById('confirmMsg').textContent = msg;
+  confirmCallback = cb;
+  document.getElementById('confirmModal').classList.add('show');
+}
+function closeConfirm(yes) {
+  document.getElementById('confirmModal').classList.remove('show');
+  if(yes && confirmCallback) confirmCallback();
+  confirmCallback = null;
+}
+
+// ===== TOAST =====
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+// ===== UTILS =====
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 </script>
 </body>
 </html>
