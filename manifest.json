@@ -1,0 +1,16 @@
+{
+  "short_name": "HotelBill",
+  "name": "Hotel Offline Billing App",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/9618/9618641.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#007bff",
+  "theme_color": "#007bff",
+  "display": "standalone",
+  "orientation": "portrait"
+}
