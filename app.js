@@ -1,12 +1,22 @@
-// LocalStorage se data uthana ya khali array banana
 let menu = JSON.parse(localStorage.getItem('hotelMenu')) || [];
 let currentBill = [];
 
-// App khulte hi settings aur menu load ho jayenge
 window.onload = function() {
     loadHotelSettings();
     updateMenuUI();
 };
+
+// --- Page Switching Logic (Tabs Change Karna) ---
+function switchPage(pageId, element) {
+    // Sabhi pages ko chupao
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    // Sabhi nav-items se active class hatao
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    
+    // Sahi page dikhao aur tab highlight karo
+    document.getElementById(pageId).classList.add('active');
+    element.classList.add('active');
+}
 
 // 1. Hotel Settings Save aur Load
 function saveHotelSettings() {
@@ -22,7 +32,12 @@ function saveHotelSettings() {
     }
     
     localStorage.setItem('hotelDetails', JSON.stringify(hotelDetails));
-    alert('Hotel Settings successfully save ho gayi hain!');
+    document.getElementById('displayShopName').innerText = hotelDetails.name;
+    
+    alert('Settings Save Ho Gayi! Ab aap Billing Page par ja sakte hain.');
+    
+    // Automatic billing page par redirect kar dega save hote hi
+    switchPage('billing-page', document.querySelectorAll('.nav-item')[0]);
 }
 
 function loadHotelSettings() {
@@ -31,6 +46,7 @@ function loadHotelSettings() {
         document.getElementById('hotelName').value = details.name || '';
         document.getElementById('hotelAddress').value = details.address || '';
         document.getElementById('hotelUPI').value = details.upi || '';
+        document.getElementById('displayShopName').innerText = details.name || 'Hotel Billing App';
     }
 }
 
@@ -61,9 +77,7 @@ function updateMenuUI() {
     billSelect.innerHTML = '<option value="">-- Item Select Karen --</option>';
 
     menu.forEach((item, index) => {
-        // Menu list update
         menuList.innerHTML += `<li><span>${item.name} (₹${item.price})</span> <button class="btn-danger" onclick="deleteMenuItem(${index})">X</button></li>`;
-        // Billing dropdown update
         billSelect.innerHTML += `<option value="${index}">${item.name} (₹${item.price})</option>`;
     });
 }
@@ -76,7 +90,7 @@ function deleteMenuItem(index) {
     }
 }
 
-// 3. Billing Section (Add to bill & Calculate)
+// 3. Billing Section
 function addItemToCurrentBill() {
     const select = document.getElementById('billItemSelect');
     const qty = parseInt(document.getElementById('billItemQty').value);
@@ -88,9 +102,8 @@ function addItemToCurrentBill() {
     }
 
     const selectedItem = menu[itemIndex];
-    
-    // Agar item pehle se bill me hai toh sirf quantity badhao
     const existingItem = currentBill.find(b => b.name === selectedItem.name);
+    
     if (existingItem) {
         existingItem.qty += qty;
         existingItem.total = existingItem.qty * existingItem.price;
@@ -103,7 +116,6 @@ function addItemToCurrentBill() {
         });
     }
 
-    // Input reset to 1
     document.getElementById('billItemQty').value = 1;
     updateBillTable();
 }
@@ -126,11 +138,11 @@ function updateBillTable() {
     document.getElementById('finalTotal').innerText = grandTotal;
 }
 
-// 4. Bluetooth Thermal Printer Text Format Generation
+// 4. Bluetooth Share & Dynamic UPI QR Code Generation
 function printBill() {
     const details = JSON.parse(localStorage.getItem('hotelDetails'));
     if (!details || !details.name) {
-        alert('Pehle Section 1 me Hotel ka naam daal kar Save karein!');
+        alert('Pehle Settings page par jaakar Hotel details save karein!');
         return;
     }
 
@@ -141,43 +153,53 @@ function printBill() {
 
     let total = document.getElementById('finalTotal').innerText;
 
-    // Bluetooth thermal printer (58mm/80mm) ke hisab se Text Layout formatting
+    // Standard UPI Link banana jisse scanner automatic payment le sake
+    // Format: upi://pay?pa=UPI_ID&pn=NAME&am=AMOUNT&cu=INR
+    let upiString = "";
+    if(details.upi) {
+        upiString = `upi://pay?pa=${encodeURIComponent(details.upi)}&pn=${encodeURIComponent(details.name)}&am=${total}&cu=INR`;
+    }
+
+    // Bill Text Format for Thermal Bluetooth Printer
     let billText = `==============================\n`;
     billText += `      ${details.name.toUpperCase()}      \n`;
     if(details.address) billText += `   ${details.address}   \n`;
-    if(details.upi)     billText += `UPI: ${details.upi}\n`;
+    if(details.upi)     billText += `UPI ID: ${details.upi}\n`;
     billText += `==============================\n`;
     billText += `Item          Qty  Rate   Total\n`;
     billText += `------------------------------\n`;
 
     currentBill.forEach(item => {
-        // 58mm printer par alignment sahi rakhne ke liye padding spaces
         let nameField = item.name.substring(0, 12).padEnd(12, ' ');
         let qtyField = item.qty.toString().padEnd(4, ' ');
         let priceField = item.price.toString().padEnd(6, ' ');
         let totalField = item.total.toString();
-        
         billText += `${nameField} ${qtyField} ${priceField} ${totalField}\n`;
     });
 
     billText += `------------------------------\n`;
     billText += `GRAND TOTAL:            Rs.${total}\n`;
     billText += `==============================\n`;
+    
+    if(details.upi) {
+        billText += `  Scan QR in Printer App to Pay \n`;
+        billText += `UPI Link: ${upiString}\n`;
+        billText += `==============================\n`;
+    }
+    
     billText += `   Thank You! Visit Again 🙏   \n`;
     billText += `==============================\n\n\n`;
 
-    // Android aur iOS mobile share menu trigger karne ke liye
+    // Mobile share handle karna
     if (navigator.share) {
         navigator.share({
             title: `${details.name} Bill`,
             text: billText
         }).then(() => {
-            // Bill print dabate hi list reset ho jayegi naye customer ke liye
             currentBill = [];
             updateBillTable();
         }).catch((error) => console.log('Sharing failed', error));
     } else {
-        // Computer/Desktop ke liye normal popup fallback
-        alert("Mobile browser par chalayein taaki bluetooth printer me share ho sake. Aapka bill:\n\n" + billText);
+        alert("Aapka bill text format:\n\n" + billText);
     }
 }
