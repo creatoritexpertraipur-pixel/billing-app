@@ -2,491 +2,400 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Hotel Billing</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Hotel Billing Terminal (100% Offline)</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
 :root {
   --bg: #f5f0e8; --card: #fff; --primary: #c0392b; --primary-dark: #96281b;
-  --accent: #e67e22; --text: #2c2c2c; --muted: #888; --border: #ddd;
-  --green: #27ae60; --shadow: 0 2px 8px rgba(0,0,0,0.1);
+  --accent: #e67e22; --text: #2c2c2c; --muted: #7f8c8d; --border: #e2e8f0;
+  --green: #27ae60; --shadow: 0 4px 12px rgba(0,0,0,0.06); --radius: 12px;
 }
-body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
+body { background: var(--bg); color: var(--text); min-height: 100vh; padding: 12px; display: flex; justify-content: center; }
+
+.app-container { width: 100%; max-width: 460px; margin: 0 auto; }
 
 /* HEADER */
-.header { background: var(--primary); color: white; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+.header { background: var(--primary); color: white; padding: 16px; border-radius: var(--radius); display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; box-shadow: var(--shadow); }
+.header h1 { font-size: 18px; font-weight: 800; }
+.header p { font-size: 11px; opacity: 0.8; }
 
 /* TABS */
-.tabs { display: flex; background: #fff; border-bottom: 2px solid var(--border); position: sticky; top: 56px; z-index: 99; }
-.tab { flex: 1; padding: 12px 4px; text-align: center; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; }
-.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.tabs { display: flex; background: #e2e8f0; border-radius: 8px; padding: 4px; margin-bottom: 12px; }
+.tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer; border-radius: 6px; }
+.tab.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-/* PAGES */
-.page { display: none; padding: 14px; padding-bottom: 40px; }
+.page { display: none; }
 .page.active { display: block; }
 
-/* CARD */
-.card { background: var(--card); border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
-.card-title { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+/* BILL MODULE */
+.card { background: var(--card); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+.card-title { font-size: 13px; font-weight: 800; color: var(--primary); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; }
 
-/* INPUTS */
-input, select, textarea { width: 100%; padding: 11px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 15px; color: var(--text); background: #fafafa; margin-bottom: 10px; outline: none; -webkit-appearance: none; }
-input:focus, select:focus { border-color: var(--primary); background: #fff; }
-label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 3px; }
+/* LISTS & ITEMS */
+.item-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+.item-row:last-child { border: none; }
+.btn-add { background: var(--green); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; }
+.btn-add:active { transform: scale(0.95); }
 
-/* BUTTONS */
-.btn { display: block; width: 100%; padding: 13px; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; border: none; text-align: center; -webkit-tap-highlight-color: transparent; }
-.btn-primary { background: var(--primary); color: white; }
-.btn-green { background: var(--green); color: white; margin-top: 8px; }
-.btn-outline { background: transparent; border: 1.5px solid var(--primary); color: var(--primary); margin-top: 8px; }
-.btn-danger { background: #e74c3c; color: white; margin-top: 8px; }
-.btn-sm { padding: 7px 12px; font-size: 12px; border-radius: 6px; width: auto; display: inline-block; }
+/* CART & RECEIPT AREA */
+.cart-summary { display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 800; padding-top: 10px; margin-top: 10px; border-top: 2px dashed var(--border); }
 
-/* MENU LIST */
-.item-row { display: flex; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--border); gap: 8px; }
-.item-row:last-child { border-bottom: none; }
-.item-info { flex: 1; }
-.item-name { font-weight: 600; font-size: 14px; }
-.item-meta { font-size: 11px; color: var(--muted); }
-.item-rate { color: var(--accent); font-weight: 700; min-width: 55px; text-align: right; font-size: 15px; }
-.item-actions { display: flex; gap: 6px; }
+/* 100% OFFLINE RECEIPT DIALOG */
+.receipt-box { display: none; background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); border: 2px solid var(--primary); margin-top: 12px; text-align: center; }
+.receipt-box.show { display: block; animation: popIn 0.3s ease; }
+@keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-/* BILL */
-.bill-item-row { display: flex; align-items: center; padding: 9px 0; border-bottom: 1px solid #f0f0f0; gap: 8px; }
-.bill-item-name { flex: 1; font-size: 14px; font-weight: 600; }
-.bill-item-sub { font-size: 11px; color: var(--muted); }
-.qty-control { display: flex; align-items: center; gap: 2px; }
-.qty-btn { width: 32px; height: 32px; border-radius: 50%; border: none; font-size: 20px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; -webkit-tap-highlight-color: transparent; }
-.qty-minus { background: #e74c3c; color: white; }
-.qty-plus { background: var(--green); color: white; }
-.qty-num { min-width: 30px; text-align: center; font-weight: 700; font-size: 16px; }
-.bill-item-amt { min-width: 58px; text-align: right; font-weight: 700; color: var(--accent); font-size: 14px; }
+/* OFFLINE QR CANVAS TARGET */
+.qr-container { background: #f8fafc; padding: 16px; border-radius: 8px; display: inline-block; margin: 12px auto; border: 1px solid var(--border); }
+/* Canvas core alignment */
+.qr-container canvas { display: block; margin: 0 auto; background: white; }
 
-/* TOTAL BAR */
-.total-bar { background: var(--primary); color: white; border-radius: 10px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
-.total-amount { font-size: 26px; font-weight: 800; }
+/* GLOBAL INPUTS */
+.form-group { margin-bottom: 12px; }
+.form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; color: var(--text); }
+.form-group input { width: 100%; padding: 10px; border: 1.5px solid var(--border); border-radius: 6px; outline: none; font-size: 14px; }
+.form-group input:focus { border-color: var(--accent); }
 
-/* RECEIPT */
-.receipt { background: #fff; border-radius: 10px; padding: 16px; font-family: 'Courier New', monospace; font-size: 13px; box-shadow: var(--shadow); display: none; margin-top: 14px; }
-.receipt.show { display: block; }
-.receipt-header { text-align: center; border-bottom: 1px dashed #aaa; padding-bottom: 10px; margin-bottom: 10px; }
-.receipt-hotel { font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
-.receipt-line { display: flex; justify-content: space-between; padding: 2px 0; font-size: 13px; }
-.receipt-divider { border-top: 1px dashed #aaa; margin: 6px 0; }
-.receipt-total { font-weight: 700; font-size: 15px; }
+.btn-block { display: block; width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; text-align: center; }
+.btn-block:active { transform: scale(0.98); }
+.btn-print { background: var(--primary); }
 
-/* QR DISPLAY */
-.qr-display-container { display: none; flex-direction: column; align-items: center; justify-content: center; margin-top: 10px; padding: 10px; background: #fafafa; border-radius: 8px; border: 1px solid var(--border); }
-.qr-display-title { font-size: 11px; font-weight: bold; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; }
-
-/* MODAL */
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 300; align-items: flex-end; justify-content: center; }
-.modal-overlay.show { display: flex; }
-.modal { background: white; border-radius: 16px 16px 0 0; padding: 20px 16px 30px; width: 100%; max-width: 480px; animation: slideUp 0.2s ease; max-height: 90vh; overflow-y: auto; }
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.modal-title { font-weight: 700; font-size: 16px; margin-bottom: 16px; color: var(--primary); }
-.modal-row { display: flex; gap: 10px; margin-top: 4px; }
-.modal-row .btn { flex: 1; }
-
-/* TOAST */
-.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2c2c2c; color: white; padding: 11px 22px; border-radius: 20px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; white-space: nowrap; }
+/* TOAST OVERLAY */
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2c3e50; color: white; padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.3s; z-index: 1000; pointer-events: none; }
 .toast.show { opacity: 1; }
-
-/* EMPTY */
-.empty { text-align: center; padding: 30px 16px; color: var(--muted); font-size: 14px; }
-.empty-icon { font-size: 40px; margin-bottom: 8px; }
-
-/* CONFIRM MODAL */
-.confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 400; align-items: center; justify-content: center; }
-.confirm-overlay.show { display: flex; }
-.confirm-box { background: white; border-radius: 14px; padding: 24px 20px; width: 90%; max-width: 320px; text-align: center; }
-.confirm-msg { font-size: 15px; margin-bottom: 20px; line-height: 1.5; }
-.confirm-row { display: flex; gap: 10px; }
-.confirm-row .btn { flex: 1; }
 
 @media print {
   body * { visibility: hidden; }
   #printArea, #printArea * { visibility: visible; }
-  #printArea { position: absolute; left: 0; top: 0; width: 58mm; font-family: 'Courier New', monospace; font-size: 10pt; }
-  .no-print-element { display: none !important; }
+  #printArea { position: absolute; left: 0; top: 0; width: 58mm; text-align: center; }
+  .no-print { display: none !important; }
 }
 </style>
+
+<script>
+/* qrcode-mini.js algorithm embedded locally inside client memory */
+var QRCode=function(){function f(a,b){this.typeNumber=a;this.errorCorrectLevel=b;this.modules=null;this.moduleCount=0;this.dataCache=null;this.dataList=[]}function q(a,b){if(void 0==a.length)throw Error(a.length+"/"+b);for(var c=0;c<a.length&&0==a[c];)c++;this.num=Array(a.length-c+b);for(var d=0;d<a.length-c;d++)this.num[d]=a[d+c]}function p(a,b){this.toNum=a;this.data=b}f.prototype={addData:function(a){a=new p(4,a);this.dataList.push(a);this.dataCache=null},isDark:function(a,b){if(0>a||this.moduleCount<=a||0>b||this.moduleCount<=b)throw Error(a+","+b);return this.modules[a][b]},getModuleCount:function(){return this.moduleCount},make:function(){this.makeImpl(!1,this.getBestMaskPattern())},makeImpl:function(a,b){this.moduleCount=4*this.typeNumber+17;this.modules=Array(this.moduleCount);for(var c=0;c<this.moduleCount;c++){this.modules[c]=Array(this.moduleCount);for(var d=0;d<this.moduleCount;d++)this.modules[c][d]=null}this.setupPositionProbePattern(0,0);this.setupPositionProbePattern(this.moduleCount-7,0);this.setupPositionProbePattern(0,this.moduleCount-7);this.setupPositionAdjustPattern();this.setupTimingPattern();this.setupTypeInfo(a,b);7<=this.typeNumber&&this.setupTypeNumber(a);null==this.dataCache&&(this.dataCache=f.createData(this.typeNumber,this.errorCorrectLevel,this.dataList));this.mapData(this.dataCache,b)},setupPositionProbePattern:function(a,b){for(var c=-1;7>=c;c++)if(!(-1>a+c||this.moduleCount<=a+c))for(var d=-1;7>=d;d++)-1>b+d||this.moduleCount<=b+d||(0<=c&&6>=c&&(0==c||6==c)||0<=d&&6>=d&&(0==d||6==d)||2<=c&&4>=c&&2<=d&&4>=d?this.modules[a+c][b+d]=!0:this.modules[a+c][b+d]=!1)},getBestMaskPattern:function(){for(var a=0,b=0,c=0;8<c;c++){this.makeImpl(!0,c);var d=h.getLostPoint(this);if(0==c||a>d)a=d,b=c}return b},setupTimingPattern:function(){for(var a=8;this.moduleCount-8>a;a++)null==this.modules[a][6]&&(this.modules[a][6]=0==a%2);for(var b=8;this.moduleCount-8>b;b++)null==this.modules[6][b]&&(this.modules[6][b]=0==b%2)},setupPositionAdjustPattern:function(){for(var a=h.getPatternPosition(this.typeNumber),b=0;b<a.length;b++)for(var c=0;c<a.length;c++){var d=a[b],e=a[c];if(null==this.modules[d][e])for(var g=-2;2>=g;g++)for(var k=-2;2>=k;k++)-2==g||2==g||-2==k||2==k||0==g&&0==k?this.modules[d+g][e+k]=!0:this.modules[d+g][e+k]=!1}},setupTypeInfo:function(a,b){for(var c=this.errorCorrectLevel<<3|b,d=h.getBCHTypeInfo(c),e=0;15>e;e++){var g=!a&&1==(d>>e&1);6>e?this.modules[e][8]=g:8>e?this.modules[e+1][8]=g:this.modules[this.moduleCount-15+e][8]=g}for(e=0;15>e;e++)g=!a&&1==(d>>e&1),8>e?this.modules[8][this.moduleCount-e-1]=g:9>e?this.modules[8][15-e-1+1]=g:this.modules[8][15-e-1]=g;this.modules[this.moduleCount-8][8]=!a},setupTypeNumber:function(a){for(var b=h.getBCHTypeNumber(this.typeNumber),c=0;18<c;c++){var d=!a&&1==(b>>c&1);this.modules[Math.floor(c/3)][c%3+this.moduleCount-8-3]=d}for(c=0;18<c;c++)d=!a&&1==(b>>c&1),this.modules[c%3+this.moduleCount-8-3][Math.floor(c/3)]=d},mapData:function(a,b){for(var c=-1,d=this.moduleCount-1,e=7,g=0,k=this.moduleCount-1;0<k;k-=2)for(6==k&&k--;;){for(var h=0;2>h;h++){var f=d;if(null==this.modules[f][k-h]){var l=!1;g<a.length&&(l=1==(a[g]>>e&1));if(h.getMask(b,f,k-h))l=!l;this.modules[f][k-h]=l;e--;-1==e&&(g++,e=7)}}d+=c;if(0>d||this.moduleCount<=d){d-=c;c=-c;break}}}},f.createData=function(a,b,c){b=r.getRSBlocks(a,b);for(var d=new m,e=0;e<c.length;e++){var g=c[e];d.put(g.toNum,4);d.put(g.data.length,h.getLengthInBits(g.toNum,a));for(var k=0;k<g.data.length;k++)d.put(g.data.charCodeAt(k),8)}for(var f=0,e=0;e<b.length;e++)f+=b[e].dataCount;if(d.getLengthInBits()>8*f)throw Error("code length overflow. ("+d.getLengthInBits()+">"+8*f+")");for(d.getLengthInBits()+4<=8*f&&d.put(0,4);0!=d.getLengthInBits()%8;)d.putBit(!1);for(;!(d.getLengthInBits()>=8*f);){d.put(170,8);if(d.getLengthInBits()>=8*f)break;d.put(60,8)}return f.createBytes(d,b)};p.prototype={getLength:function(){return this.data.length}};q.prototype={getAt:function(a){return this.num[a]},getLength:function(){return this.num.length},multiply:function(a){for(var b=Array(this.getLength()+a.getLength()-1),c=0;c<this.getLength();c++)for(var d=0;d<a.getLength();d++)b[c+d]^=h.glog(this.getAt(c))+h.glog(a.getAt(d));return new q(b,0)},mod:function(a){if(0>this.getLength()-a.getLength())return this;for(var b=h.glog(this.getAt(0))-h.glog(a.getAt(0)),c=Array(this.getLength()),d=0;d<this.getLength();d++)c[d]=this.getAt(d);for(d=0;d<a.getLength();d++)c[d]^=h.gexp(h.glog(a.getAt(d))+b);return(new q(c,0)).mod(a)}};var r=function(a,b){this.totalCount=a;this.dataCount=b};r.RS_BLOCK_TABLE=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19,1,44,20],[4,43,15,2,44,16],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,4,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,4,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,43,27,1,44,28],[6,43,19,2,44,20],[6,43,15,2,44,16]];r.getRSBlocks=function(a,b){var c=r.getRsBlockTable(a,b);if(void 0==c)throw Error("bad rs block @ typeNumber:"+a+"/errorCorrectLevel:"+b);for(var d=c.length/3,e=[],g=0;g<d;g++)for(var k=c[3*g],f=c[3*g+1],h=c[3*g+2],l=0;l<k;l++)e.push(new r(f,h));return e};r.getRsBlockTable=function(a,b){switch(b){case 1:return r.RS_BLOCK_TABLE[4*(a-1)+0];case 0:return r.RS_BLOCK_TABLE[4*(a-1)+1];case 3:return r.RS_BLOCK_TABLE[4*(a-1)+2];case 2:return r.RS_BLOCK_TABLE[4*(a-1)+3]}};f.createBytes=function(a,b){for(var c=0,d=0,e=0,g=Array(b.length),k=Array(b.length),f=0;f<b.length;f++){var h=b[f].dataCount,l=b[f].totalCount-h,d=Math.max(d,h),e=Math.max(e,l);g[f]=Array(h);for(var n=0;n<g[f].length;n++)g[f][n]=255&a.buffer[n+c];c+=h;var m=h,p=l,r=Array(p);for(n=0;n<p;n++)r[n]=0;m=new q(g[f],p);p=(new q([1],0)).multiply(new q(h.QR_MATH_EXP_TABLE[p],0));p=m.mod(p);k[f]=Array(p.getLength()-1);for(n=0;n<k[f].length;n++)k[f][n]=p.getAt(n+p.getLength()-k[f].length)}for(f=n=0;f<b.length;f++)n+=b[f].totalCount;c=Array(n);for(n=f=0;f<d;f++)for(h=0;h<b.length;h++)f<g[h].length&&(c[n++]=g[h][f]);for(f=0;f<e;f++)for(h=0;h<b.length;h++)f<k[h].length&&(c[n++]=k[h][f]);return c};var h={QR_MATH_EXP_TABLE:function(){for(var a=Array(256),b=0;8>b;b++)a[b]=1<<b;for(b=8;256>b;b++)a[b]=a[b-4]^a[b-5]^a[b-6]^a[b-8];return a}(),QR_MATH_LOG_TABLE:function(){for(var a=Array(256),b=0;256>b;b++)a[b]=0;for(b=0;255>b;b++)a[h.QR_MATH_EXP_TABLE[b]]=b;return a}(),glog:function(a){if(1>a)throw Error("glog("+a+")");return h.QR_MATH_LOG_TABLE[a]},gexp:function(a){for(;0>a;)a+=255;for(;256<=a;)a-=255;return h.QR_MATH_EXP_TABLE[a]},getBCHTypeInfo:function(a){for(var b=a<<10;0<=h.getBCHDigit(b)-h.getBCHDigit(1335);)b^=1335<<(h.getBCHDigit(b)-h.getBCHDigit(1335));return(a<<10|b)^21522},getBCHTypeNumber:function(a){for(var b=a<<12;0<=h.getBCHDigit(b)-h.getBCHDigit(7973);)b^=7973<<(h.getBCHDigit(b)-h.getBCHDigit(7973));return a<<12|b},getBCHDigit:function(a){for(var b=0;0!=a;)b++,a>>>=1;return b},getPatternPosition:function(a){return h.PATTERN_POSITION_TABLE[a-1]},PATTERN_POSITION_TABLE:[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,26,52,78],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166]],getLengthInBits:function(a,b){if(1<=b&&10>b)switch(a){case 4:return 8;case 8:return 16;default:return 10}else if(27>b)switch(a){case 4:return 16;case 8:return 16;default:return 12}else if(41>b)switch(a){case 4:return 16;case 8:return 16;default:return 14}else throw Error("type:"+b);},getLostPoint:function(a){for(var b=a.getModuleCount(),c=0,d=0;d<b;d++)for(var e=0;e<b;e++){for(var g=0,f=a.isDark(d,e),h=-1;1>=h;h++)if(!(0>d+h||b<=d+h))for(var l=-1;1>=l;l++)0>e+l||b<=e+l||0==h&&0==l||f==a.isDark(d+h,e+l)&&g++;5<g&&(c+=3+g-5)}for(d=0;d<b-1;d++)for(e=0;e<b-1;e++)if(g=0,a.isDark(d,e)&&g++,a.isDark(d+1,e)&&g++,a.isDark(d,e+1)&&g++,a.isDark(d+1,e+1)&&g++,0==g||4==g)c+=3;for(d=0;d<b;d++)for(e=0;e<b-6;e++)a.isDark(d,e)&&!a.isDark(d,e+1)&&a.isDark(d,e+2)&&a.isDark(d,e+3)&&a.isDark(d,e+4)&&!a.isDark(d,e+5)&&a.isDark(d,e+6)&&(c+=40);for(e=0;e<b;e++)for(d=0;d<b-6;d++)a.isDark(d,e)&&!a.isDark(d+1,e)&&a.isDark(d+2,e)&&a.isDark(d+3,e)&&a.isDark(d+4,e)&&!a.isDark(d+5,e)&&a.isDark(d+6,e)&&(c+=40);for(var m=0,e=0;e<b;e++)for(d=0;d<b;d++)a.isDark(d,e)&&m++;return c+10*(Math.abs(100*m/b/b-50)/5)},getMask:function(a,b,c){switch(a){case 0:return 0==(b+c)%2;case 1:return 0==b%2;case 2:return 0==c%3;case 3:return 0==(b+c)%3;case 4:return 0==(Math.floor(b/2)+Math.floor(c/3))%2;case 5:return 0==b*c%2+b*c%3;case 6:return 0==(b*c%2+b*c%3)%2;case 7:return 0==(b*c%3+(b+c)%2)%2;default:throw Error("bad maskPattern:"+a);}}};var m=function(){this.buffer=[];this.length=0};m.prototype={get:function(a){return 1==(this.buffer[Math.floor(a/8)]>>7-a%8&1)},put:function(a,b){for(var c=0;c<b;c++)this.putBit(1==(a>>b-c-1&1))},getLengthInBits:function(){return this.length},putBit:function(a){var b=Math.floor(this.length/8);this.buffer.length<=b&&this.buffer.push(0);a&&(this.buffer[b]|=128>>this.length%8);this.length++}};return function(a,b){var c=new f(4,1);c.addData(a);c.make();var d=b||{};b=d.size||200;d=d.margin||0;var e=document.createElement("canvas");e.width=b;e.height=b;var g=e.getContext("2d"),k=c.getModuleCount(),h=Math.floor((b-2*d)/k),l=Math.floor((b-h*k)/2);g.fillStyle="#ffffff";g.fillRect(0,0,b,b);g.fillStyle="#000000";for(var m=0;m<k;m++)for(var n=0;n<k;n++)c.isDark(m,n)&&g.fillRect(l+n*h,l+m*h,h,h);return e}}();
+</script>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div>
-    <div id="headerHotelName" style="font-size:17px;font-weight:700;">🍽️ Hotel Billing</div>
-    <div id="headerHotelSub" style="font-size:11px;opacity:0.85;">Soni Infotech</div>
-  </div>
-  <button class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;border:none;" onclick="showTab('settings')">⚙️ Settings</button>
-</div>
+<div class="app-container">
 
-<!-- TABS -->
-<div class="tabs">
-  <div class="tab active" id="tab-billing" onclick="showTab('billing')">🧾 Bill</div>
-  <div class="tab" id="tab-menu" onclick="showTab('menu')">📋 Menu</div>
-  <div class="tab" id="tab-settings" onclick="showTab('settings')">⚙️ Settings</div>
-</div>
-
-<!-- ===== BILLING PAGE ===== -->
-<div class="page active" id="page-billing">
-  <div class="card">
-    <div class="card-title">Items Select Karo</div>
-    <input type="text" id="searchItem" placeholder="🔍 Search item..." oninput="renderBillItems()" autocomplete="off" />
-    <div id="billItemsList"></div>
-  </div>
-  <div class="total-bar">
+  <div class="header">
     <div>
-      <div style="font-size:13px;opacity:0.9;">Total Amount</div>
-      <div style="font-size:11px;opacity:0.75;" id="itemCountLabel">0 items</div>
+      <h1 id="shopTitle">Hotel Billing</h1>
+      <p id="shopSubTitle">100% Offline Terminal</p>
     </div>
-    <div class="total-amount">₹<span id="grandTotal">0</span></div>
+    <button class="tab" style="max-width:80px; padding:6px;" onclick="switchTab('config')">⚙️ Setup</button>
   </div>
-  <button class="btn btn-primary" onclick="generateBill()">🧾 Bill Generate Karo</button>
-  <button class="btn btn-outline" onclick="clearBill()" style="margin-top:8px;">🗑️ Clear Bill</button>
 
-  <div class="receipt" id="receipt">
-    <div id="printArea">
-      <div class="receipt-header">
-        <div class="receipt-hotel" id="rcptHotelName"></div>
-        <div id="rcptHotelAddr" style="font-size:11px;margin-top:2px;"></div>
-        <div id="rcptHotelPhone" style="font-size:11px;"></div>
+  <div class="tabs">
+    <div class="tab active" id="tab-billing" onclick="switchTab('billing')">🧾 New Bill</div>
+    <div class="tab" id="tab-menu" onclick="switchTab('menu')">📋 Menu Items</div>
+  </div>
+
+  <div class="page active" id="page-billing">
+    <div class="card">
+      <div class="card-title">Select Items To Add</div>
+      <div id="billingMenuContainer">
+        </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Current Order List</div>
+      <div id="cartContainer">
+        <p style="color:var(--muted); font-size:13px; text-align:center;">Koi item add nahi kiya hai.</p>
       </div>
-      <div style="font-size:11px;margin-bottom:6px;display:flex;justify-content:space-between;">
-        <span id="rcptBillNo"></span><span id="rcptDate"></span>
+      <div class="cart-summary">
+        <span>Total Payable:</span>
+        <span>₹<span id="cartTotalDisplay">0</span></span>
       </div>
-      <div class="receipt-divider"></div>
-      <div id="rcptItems"></div>
-      <div class="receipt-divider"></div>
-      <div class="receipt-line receipt-total"><span>TOTAL</span><span>₹<span id="rcptTotal"></span></span></div>
-      <div class="receipt-divider"></div>
-      
-      <!-- AUTOMATIC QR CODE AREA -->
-      <div id="qrCodeContainer" class="qr-display-container">
-        <div class="qr-display-title no-print-element">Scan & Pay</div>
-        <img id="billQRCode" src="" width="130" height="130" alt="UPI QR Code" style="display:block;margin:0 auto;" />
-        <div id="rcptUpiText" style="font-size:10px; margin-top:4px; font-weight:bold; text-align:center;"></div>
+      <button class="btn-block" onclick="generateInvoiceReceipt()">🎯 Process & Generate Offline QR</button>
+    </div>
+
+    <div class="receipt-box" id="invoiceReceipt">
+      <div id="printArea">
+        <h2 style="font-size:16px; font-weight:800;" id="rcptShop">Shop Identity</h2>
+        <p style="font-size:11px; color:var(--muted);" id="rcptPhone">Contact details</p>
+        <p style="font-size:11px; border-bottom:1px dashed #ccc; padding-bottom:8px; margin-bottom:8px;">Date: Local Time Stream</p>
+
+        <div class="qr-container" id="offlineQrHolder">
+          </div>
+
+        <h3 style="font-size:24px; font-weight:800; color:var(--primary);">₹<span id="rcptAmount">0</span></h3>
+        <p style="font-size:10px; color:var(--muted);" id="rcptUpi">merchant@upi</p>
       </div>
-      
-      <div class="receipt-divider" id="qrDivider" style="display: none;"></div>
-      <div style="text-align:center;font-size:11px;margin-top:6px;" id="rcptFooter"></div>
-    </div>
-    
-    <!-- PRINTER OPTIONS ARE BACK -->
-    <div style="display:flex;gap:8px;margin-top:14px;">
-      <button class="btn btn-primary" style="flex:2;" onclick="printBluetooth()">🖨️ Bluetooth Print</button>
-      <button class="btn btn-outline btn-sm" style="flex:1;" onclick="window.print()">🖨️ Normal</button>
+
+      <div class="no-print" style="margin-top:14px;">
+        <button class="btn-block btn-print" onclick="window.print()">🖨️ Print Thermal Invoice</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ===== MENU PAGE ===== -->
-<div class="page" id="page-menu">
-  <div class="card">
-    <div class="card-title">¼️ Naya Item Add Karo</div>
-    <label>Item ka Naam *</label>
-    <input type="text" id="newItemName" placeholder="e.g. Samosa, Chai..." autocomplete="off" />
-    <label>Rate (₹) *</label>
-    <input type="number" id="newItemRate" placeholder="e.g. 15" min="0" inputmode="numeric" />
-    <label>Category</label>
-    <input type="text" id="newItemCat" placeholder="e.g. Snacks" autocomplete="off" />
-    <button class="btn btn-green" onclick="addMenuItem()">➕ Add Item</button>
-  </div>
-  <div class="card">
-    <div class="card-title">📋 Menu List — <span id="menuCount">0</span> items</div>
-    <div id="menuList"></div>
-  </div>
-</div>
-
-<!-- ===== SETTINGS ===== -->
-<div class="page" id="page-settings">
-  <div class="card">
-    <div class="card-title">🏨 Hotel Ki Jankari</div>
-    <label>Hotel ka Naam *</label>
-    <input type="text" id="settHotelName" />
-    <label>Address</label>
-    <input type="text" id="settHotelAddr" />
-    <label>Phone Number</label>
-    <input type="text" id="settHotelPhone" inputmode="numeric" />
-    
-    <!-- UPI BOX -->
-    <label>UPI ID (For Auto QR Payment)</label>
-    <input type="text" id="settHotelUPI" placeholder="e.g. sonihotel@upi" autocomplete="off" />
-    
-    <label>Bill Footer Text</label>
-    <input type="text" id="settFooter" />
-    <button class="btn btn-primary" onclick="saveSettings()">💾 Settings Save Karo</button>
-  </div>
-  <div class="card">
-    <div class="card-title">📦 Data Backup</div>
-    <button class="btn btn-outline" onclick="exportData()">📤 Backup Export</button>
-    <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">📥 Backup Import</button>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)" />
-    <button class="btn btn-danger" onclick="askClearAll()">🗑️ Sab Data Delete</button>
-  </div>
-</div>
-
-<!-- EDIT MODAL -->
-<div class="modal-overlay" id="editModal">
-  <div class="modal">
-    <div class="modal-title">✏️ Item Edit Karo</div>
-    <input type="text" id="editName" />
-    <input type="number" id="editRate" inputmode="numeric" />
-    <input type="text" id="editCat" />
-    <input type="hidden" id="editIndex" />
-    <div class="modal-row">
-      <button class="btn btn-outline" onclick="closeEditModal()">❌ Cancel</button>
-      <button class="btn btn-primary" onclick="saveEdit()">✅ Save</button>
+  <div class="page" id="page-config">
+    <div class="card">
+      <div class="card-title">Merchant Endpoint Credentials</div>
+      <div class="form-group">
+        <label>Shop/Hotel Name</label>
+        <input type="text" id="cfgShopName" placeholder="e.g. Soni Hotel Baloda">
+      </div>
+      <div class="form-group">
+        <label>UPI ID (For Direct Payments)</label>
+        <input type="text" id="cfgUpiId" placeholder="e.g. soni@ybl, 9876543210@paytm">
+      </div>
+      <div class="form-group">
+        <label>Contact Phone Number</label>
+        <input type="text" id="cfgPhone" placeholder="e.g. 9876543210">
+      </div>
+      <button class="btn-block" onclick="saveMerchantSettings()">💾 Deploy Security Parameters</button>
     </div>
   </div>
-</div>
 
-<!-- CONFIRM MODAL -->
-<div class="confirm-overlay" id="confirmModal">
-  <div class="confirm-box">
-    <div class="confirm-msg" id="confirmMsg"></div>
-    <div class="confirm-row">
-      <button class="btn btn-outline" onclick="closeConfirm(false)">Cancel</button>
-      <button class="btn btn-danger" onclick="closeConfirm(true)">Delete</button>
+  <div class="page" id="page-menu">
+    <div class="card">
+      <div class="card-title">Add New Dish To Menu</div>
+      <div class="form-group">
+        <label>Dish Name</label>
+        <input type="text" id="inDishName" placeholder="e.g. Paneer Butter Masala">
+      </div>
+      <div class="form-group">
+        <label>Rate (₹)</label>
+        <input type="number" id="inDishPrice" placeholder="e.g. 150">
+      </div>
+      <button class="btn-block" onclick="addNewDishItem()">➕ Insert Item into Storage</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Available Menu Catalog</div>
+      <div id="catalogContainer"></div>
     </div>
   </div>
+
 </div>
 
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
+<div class="toast" id="appToast"></div>
 
 <script>
-let menuItems = [];
-let settings  = {};
-let cart      = {};
-let billCounter = 1;
-let confirmCallback = null;
-
-function loadAll() {
-  try { menuItems = JSON.parse(localStorage.getItem('hb_menu') || '[]'); } catch(e) { menuItems = []; }
-  try { settings  = JSON.parse(localStorage.getItem('hb_settings') || '{}'); } catch(e) { settings = {}; }
-  billCounter = parseInt(localStorage.getItem('hb_billno') || '1');
-}
-function saveMenuStorage()     { localStorage.setItem('hb_menu', JSON.stringify(menuItems)); }
-function saveSettingsStorage() { localStorage.setItem('hb_settings', JSON.stringify(settings)); }
+let menuList = [];
+let activeCart = {};
+let config = {};
 
 window.onload = function() {
-  loadAll();
-  if (!menuItems.length && !localStorage.getItem('hb_init')) {
-    menuItems = [
-      {name:'Chai', rate:10, cat:'Beverages'},
-      {name:'Coffee', rate:20, cat:'Beverages'},
-      {name:'Samosa', rate:15, cat:'Snacks'}
+  // Local storage mapping configurations
+  try {
+    config = JSON.parse(localStorage.getItem('htl_cfg') || '{}');
+    menuList = JSON.parse(localStorage.getItem('htl_menu') || '[]');
+  } catch(e) { config={}; menuList=[]; }
+
+  // Default standard dataset fallback injection if database returns blank
+  if(menuList.length === 0) {
+    menuList = [
+      { id: 1, name: 'Samosa Extra Pro', price: 15 },
+      { id: 2, name: 'Special Tea Baloda Blend', price: 10 },
+      { id: 3, name: 'Premium Veg Thali', price: 120 }
     ];
-    settings = { hotelName:'Soni Hotel', address:'Korba, Chhattishgarh', phone:'', upi:'sonihotel@upi', footer:'Thank You!' };
-    saveMenuStorage();
-    saveSettingsStorage();
-    localStorage.setItem('hb_init','1');
+    localStorage.setItem('htl_menu', JSON.stringify(menuList));
   }
-  applySettings();
-  renderMenuList();
-  renderBillItems();
+
+  if(config.name && config.upi) {
+    applyIdentityLayers();
+    switchTab('billing');
+  } else {
+    pushToast('⚙️ Pehle parameters configuration set karein!');
+    switchTab('config');
+  }
 };
 
-function showTab(tab) {
-  ['billing','menu','settings'].forEach(t => {
-    document.getElementById('page-'+t).classList.toggle('active', t===tab);
-    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+function switchTab(target) {
+  document.getElementById('page-billing').classList.toggle('active', target==='billing');
+  document.getElementById('tab-billing').classList.toggle('active', target==='billing');
+  document.getElementById('page-menu').classList.toggle('active', target==='menu');
+  document.getElementById('tab-menu').classList.toggle('active', target==='menu');
+  document.getElementById('page-config').classList.toggle('active', target==='config');
+  
+  if(target === 'billing') { renderBillingDesk(); }
+  if(target === 'menu') { renderCatalogGrid(); }
+  
+  if(target === 'config') {
+    document.getElementById('cfgShopName').value = config.name || '';
+    document.getElementById('cfgUpiId').value = config.upi || '';
+    document.getElementById('cfgPhone').value = config.phone || '';
+  }
+}
+
+function saveMerchantSettings() {
+  const name = document.getElementById('cfgShopName').value.trim();
+  const upi = document.getElementById('cfgUpiId').value.trim();
+  const phone = document.getElementById('cfgPhone').value.trim();
+
+  if(!name || !upi) { pushToast('⚠️ Name aur UPI configurations zaroori hain!'); return; }
+  
+  config = { name, upi, phone };
+  localStorage.setItem('htl_cfg', JSON.stringify(config));
+  applyIdentityLayers();
+  pushToast('✅ Dynamic secure node deployed!');
+  switchTab('billing');
+}
+
+function applyIdentityLayers() {
+  document.getElementById('shopTitle').textContent = config.name;
+}
+
+function renderBillingDesk() {
+  const container = document.getElementById('billingMenuContainer');
+  container.innerHTML = '';
+  menuList.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML = `
+      <div>
+        <div style="font-weight:700; font-size:14px;">${item.name}</div>
+        <div style="font-size:12px; color:var(--muted)">₹${item.price}</div>
+      </div>
+      <button class="btn-add" onclick="pushToCart(${item.id})">＋ Add</button>
+    `;
+    container.appendChild(row);
   });
-  if(tab==='menu') renderMenuList();
-  if(tab==='settings') fillSettingsForm();
 }
 
-function fillSettingsForm() {
-  document.getElementById('settHotelName').value  = settings.hotelName || '';
-  document.getElementById('settHotelAddr').value  = settings.address   || '';
-  document.getElementById('settHotelPhone').value = settings.phone     || '';
-  document.getElementById('settHotelUPI').value   = settings.upi       || '';
-  document.getElementById('settFooter').value     = settings.footer    || '';
-}
+function pushToCart(id) {
+  const matchedItem = menuList.find(x => x.id === id);
+  if(!matchedItem) return;
 
-function saveSettings() {
-  const name = document.getElementById('settHotelName').value.trim();
-  if(!name) { toast('⚠️ Hotel name input karo!'); return; }
-  settings.hotelName = name;
-  settings.address   = document.getElementById('settHotelAddr').value.trim();
-  settings.phone     = document.getElementById('settHotelPhone').value.trim();
-  settings.upi       = document.getElementById('settHotelUPI').value.trim();
-  settings.footer    = document.getElementById('settFooter').value.trim();
-  saveSettingsStorage();
-  applySettings();
-  toast('✅ Settings saved!');
-  showTab('billing');
-}
-
-function applySettings() {
-  document.getElementById('headerHotelName').textContent = '🍽️ ' + (settings.hotelName || 'Hotel Billing');
-  document.getElementById('headerHotelSub').textContent  = settings.address || 'Billing App';
-}
-
-function addMenuItem() {
-  const nameEl = document.getElementById('newItemName');
-  const rateEl = document.getElementById('newItemRate');
-  const catEl  = document.getElementById('newItemCat');
-  const name = nameEl.value.trim();
-  const rate = parseFloat(rateEl.value);
-  const cat  = catEl.value.trim() || 'General';
-
-  if(!name || isNaN(rate)) { toast('⚠️ Sahi details enter karo'); return; }
-  menuItems.push({ name, rate, cat });
-  saveMenuStorage();
-  renderMenuList();
-  renderBillItems();
-  nameEl.value = ''; rateEl.value = '';
-  toast('✅ Added!');
-}
-
-function renderMenuList() {
-  const list = document.getElementById('menuList');
-  document.getElementById('menuCount').textContent = menuItems.length;
-  if(!menuItems.length) { list.innerHTML = '<div class="empty">No items</div>'; return; }
-  let html = '';
-  menuItems.forEach((item, i) => {
-    html += `
-      <div class="item-row">
-        <div class="item-info"><div class="item-name">${item.name}</div></div>
-        <div class="item-rate">₹${item.rate}</div>
-        <div class="item-actions">
-          <button class="btn btn-sm" style="background:#e74c3c;color:white;" onclick="deleteMenuItem(${i})">🗑️</button>
-        </div>
-      </div>`;
-  });
-  list.innerHTML = html;
-}
-
-function deleteMenuItem(i) {
-  menuItems.splice(i, 1);
-  saveMenuStorage();
-  renderMenuList();
-  renderBillItems();
-  updateTotal();
-}
-
-function renderBillItems() {
-  const list = document.getElementById('billItemsList');
-  if(!menuItems.length) { list.innerHTML = '<div class="empty">Menu khali hai</div>'; return; }
-  let html = '';
-  menuItems.forEach((item, i) => {
-    const qty = cart[i] || 0;
-    html += `
-      <div class="bill-item-row">
-        <div style="flex:1;"><div class="bill-item-name">${item.name}</div><div class="bill-item-sub">₹${item.rate}</div></div>
-        <div class="qty-control">
-          <button class="qty-btn qty-minus" onclick="changeQty(${i},-1)">−</button>
-          <div class="qty-num">${qty}</div>
-          <button class="qty-btn qty-plus" onclick="changeQty(${i},1)">+</button>
-        </div>
-      </div>`;
-  });
-  list.innerHTML = html;
-}
-
-function changeQty(i, delta) {
-  const cur = cart[i] || 0;
-  const nw = Math.max(0, cur + delta);
-  if(nw === 0) delete cart[i]; else cart[i] = nw;
-  renderBillItems();
-  updateTotal();
-}
-
-function updateTotal() {
-  let total = 0, count = 0;
-  Object.keys(cart).forEach(i => { total += menuItems[i].rate * cart[i]; count += cart[i]; });
-  document.getElementById('grandTotal').textContent = total;
-  document.getElementById('itemCountLabel').textContent = count + ' items';
-}
-
-function generateBill() {
-  const ordered = Object.keys(cart).filter(i => cart[i] > 0);
-  if(!ordered.length) { toast('⚠️ Koi item select nahi hai'); return; }
-
-  const now = new Date();
-  const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-  const billNo  = 'B-' + String(billCounter).padStart(4,'0');
-  billCounter++; localStorage.setItem('hb_billno', billCounter);
-
-  let total = 0, itemsHtml = '';
-  ordered.forEach(i => {
-    const item = menuItems[i], qty = cart[i], amt = item.rate * qty;
-    total += amt;
-    itemsHtml += `<div class="receipt-line"><span>${item.name} x${qty}</span><span>₹${amt}</span></div>`;
-  });
-
-  document.getElementById('rcptHotelName').textContent = settings.hotelName || 'Hotel';
-  document.getElementById('rcptHotelAddr').textContent = settings.address || '';
-  document.getElementById('rcptHotelPhone').textContent = settings.phone ? '📞 '+settings.phone : '';
-  document.getElementById('rcptBillNo').textContent = billNo;
-  document.getElementById('rcptDate').textContent = dateStr;
-  document.getElementById('rcptItems').innerHTML = itemsHtml;
-  document.getElementById('rcptTotal').textContent = total;
-  document.getElementById('rcptFooter').textContent = settings.footer || 'Thank You!';
-
-  // --- SAFE NO-LIBRARY QR CODE SYSTEM ---
-  const qrContainer = document.getElementById('qrCodeContainer');
-  const qrDivider = document.getElementById('qrDivider');
-  const qrImg = document.getElementById('billQRCode');
-
-  if(settings.upi && settings.upi.trim() !== "") {
-    const hotelName = settings.hotelName || 'Hotel';
-    const upiUrl = `upi://pay?pa=${encodeURIComponent(settings.upi.trim())}&pn=${encodeURIComponent(hotelName)}&am=${total}&cu=INR`;
-    
-    // Google API generator jo bina kisi download ke super fast live image banta hai
-    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upiUrl)}`;
-    
-    document.getElementById('rcptUpiText').innerText = `UPI ID: ${settings.upi}`;
-    qrContainer.style.display = 'flex';
-    qrDivider.style.display = 'block';
+  if(activeCart[id]) {
+    activeCart[id].qty++;
   } else {
-    qrContainer.style.display = 'none';
-    qrDivider.style.display = 'none';
+    activeCart[id] = { name: matchedItem.name, price: matchedItem.price, qty: 1 };
+  }
+  refreshCartView();
+}
+
+function updateCartQty(id, delta) {
+  if(!activeCart[id]) return;
+  activeCart[id].qty += delta;
+  if(activeCart[id].qty <= 0) delete activeCart[id];
+  refreshCartView();
+}
+
+function refreshCartView() {
+  const container = document.getElementById('cartContainer');
+  container.innerHTML = '';
+  let finalBillSum = 0;
+  const keys = Object.keys(activeCart);
+
+  if(keys.length === 0) {
+    container.innerHTML = '<p style="color:var(--muted); font-size:13px; text-align:center;">Order list khaali hai.</p>';
+    document.getElementById('cartTotalDisplay').textContent = 0;
+    document.getElementById('invoiceReceipt').classList.remove('show');
+    return;
   }
 
-  document.getElementById('receipt').classList.add('show');
-  toast('✅ Bill ready!');
+  keys.forEach(id => {
+    const data = activeCart[id];
+    finalBillSum += (data.price * data.qty);
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML = `
+      <div>
+        <div style="font-weight:700; font-size:13px;">${data.name}</div>
+        <div style="font-size:11px; color:var(--muted)">₹${data.price} x ${data.qty}</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button class="btn-add" style="background:#e74c3c; padding:3px 8px;" onclick="updateCartQty(${id}, -1)">-</button>
+        <span style="font-weight:bold; font-size:14px;">${data.qty}</span>
+        <button class="btn-add" style="padding:3px 8px;" onclick="updateCartQty(${id}, 1)">+</button>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+
+  document.getElementById('cartTotalDisplay').textContent = finalBillSum;
 }
 
-function clearBill() {
-  cart = {}; renderBillItems(); updateTotal();
-  document.getElementById('receipt').classList.remove('show');
-}
+/* =========================================================================
+     CORE OFFLINE INJECTION ENGINE: Dynamic String & Matrix Render
+   ========================================================================= */
+function generateInvoiceReceipt() {
+  const sum = parseFloat(document.getElementById('cartTotalDisplay').textContent);
+  if(sum <= 0) { pushToast('⚠️ Cart khali hai! Pehle items add karein.'); return; }
+  if(!config.upi) { pushToast('⚠️ Terminal identity parameters verify karein.'); switchTab('config'); return; }
 
-async function printBluetooth() {
-  const ordered = Object.keys(cart).filter(i => cart[i] > 0);
-  if(!ordered.length) { toast('⚠️ Bill khali hai'); return; }
-  if(!navigator.bluetooth) { toast('⚠️ Chrome app use karein bluetooth ke liye'); window.print(); return; }
+  // Intent payload compilation
+  const upiUrlPattern = `upi://pay?pa=${encodeURIComponent(config.upi)}&pn=${encodeURIComponent(config.name)}&am=${sum}&cu=INR`;
+
+  // Clear previous canvas if any inside memory tree
+  const targetHolder = document.getElementById('offlineQrHolder');
+  targetHolder.innerHTML = '';
+
+  try {
+    // Local memory matrix execution (0% Internet Usage)
+    const pureOfflineCanvasElement = QRCode(upiUrlPattern, { size: 160, margin: 4 });
+    targetHolder.appendChild(pureOfflineCanvasElement);
+  } catch(err) {
+    pushToast('❌ Error compiling matrix data stream.');
+    return;
+  }
+
+  // Update target printing nodes
+  document.getElementById('rcptShop').textContent = config.name;
+  document.getElementById('rcptPhone').textContent = config.phone ? '📞 ' + config.phone : '';
+  document.getElementById('rcptAmount').textContent = sum;
+  document.getElementById('rcptUpi').textContent = config.upi;
+
+  document.getElementById('invoiceReceipt').classList.add('show');
+  pushToast('🎯 Offline QR System Compiled successfully!');
   
-  // Bluetooth integration code (keeps standard execution)
-  toast('🔍 Printer dhundh raha hai...');
-  window.print();
+  // Auto Scroll down to view compiled results
+  document.getElementById('invoiceReceipt').scrollIntoView({ behavior: 'smooth' });
 }
 
-function exportData() {
-  const blob = new Blob([JSON.stringify({menuItems, settings})], {type:'application/json'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='backup.json'; a.click();
+function renderCatalogGrid() {
+  const container = document.getElementById('catalogContainer');
+  container.innerHTML = '';
+  menuList.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML = `
+      <div>
+        <div style="font-weight:700;">${item.name}</div>
+        <div style="font-size:12px; color:var(--muted)">₹${item.price}</div>
+      </div>
+      <button class="btn-add" style="background:#e74c3c" onclick="removeCatalogItem(${item.id})">🗑️ Delete</button>
+    `;
+    container.appendChild(row);
+  });
 }
 
-function importData(e) {
-  const file = e.target.files[0]; if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const d = JSON.parse(ev.target.result);
-    if(d.menuItems) { menuItems = d.menuItems; saveMenuStorage(); }
-    if(d.settings) { settings = d.settings; saveSettingsStorage(); }
-    applySettings(); renderMenuList(); renderBillItems(); toast('✅ Import Success');
-  };
-  reader.readAsText(file);
+function addNewDishItem() {
+  const name = document.getElementById('inDishName').value.trim();
+  const price = parseFloat(document.getElementById('inDishPrice').value);
+
+  if(!name || isNaN(price) || price <= 0) { pushToast('⚠️ Name aur price sahi bharein!'); return; }
+  
+  const newItem = { id: Date.now(), name, price };
+  menuList.push(newItem);
+  localStorage.setItem('htl_menu', JSON.stringify(menuList));
+  
+  document.getElementById('inDishName').value = '';
+  document.getElementById('inDishPrice').value = '';
+  
+  pushToast('✅ Item catalog me save ho gaya!');
+  renderCatalogGrid();
 }
 
-function showConfirm(msg, cb) { confirmCallback = cb; document.getElementById('confirmMsg').textContent = msg; document.getElementById('confirmModal').classList.add('show'); }
-function closeConfirm(yes) { document.getElementById('confirmModal').classList.remove('show'); if(yes&&confirmCallback) cb(); }
-function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+function removeCatalogItem(id) {
+  menuList = menuList.filter(x => x.id !== id);
+  localStorage.setItem('htl_menu', JSON.stringify(menuList));
+  renderCatalogGrid();
+  pushToast('🗑️ Item clear kiya gaya.');
+}
+
+function pushToast(msg) {
+  const t = document.getElementById('appToast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
 </script>
 </body>
 </html>
